@@ -1,5 +1,5 @@
 // components/form/rhf-image-uploader.tsx
-import { UploadCloud, X } from 'lucide-react';
+import { Camera, X } from 'lucide-react';
 import Image from 'next/image';
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -54,7 +54,7 @@ export function RHFImageUploader<T extends FieldValues>({
     [maxSize, name, setValue],
   );
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+  const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     accept: accept ? { [accept]: [] } : undefined,
     maxFiles: 1,
@@ -78,22 +78,19 @@ export function RHFImageUploader<T extends FieldValues>({
       <div
         {...getRootProps()}
         className={cn(
-          'relative flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-4 transition-colors',
-          isDragActive
-            ? 'border-primary-500 bg-primary-50 dark:bg-primary-950/20'
-            : 'border-gray-300 dark:border-gray-700 hover:border-primary-400',
+          'w-32 h-32 rounded-full border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-500 cursor-pointer hover:bg-gray-50 hover:border-primary-300 transition-all relative overflow-hidden group bg-gray-50',
           error?.message && 'border-red-500 dark:border-red-500',
         )}
       >
         <input {...getInputProps()} />
 
         {preview ? (
-          <div className="relative h-48 w-full">
+          <div className="relative h-full w-full">
             <Image
               src={preview}
               alt="Preview"
               fill
-              className="rounded-md object-contain"
+              className="object-cover"
               style={{ aspectRatio: aspectRatio ? aspectRatio : 'auto' }}
             />
             <button
@@ -105,18 +102,9 @@ export function RHFImageUploader<T extends FieldValues>({
             </button>
           </div>
         ) : (
-          <div className="text-center">
-            <UploadCloud className="mx-auto h-10 w-10 text-gray-400" />
-            <p className="mt-2 text-sm text-gray-500">
-              {isDragActive ? (
-                <span>فایل را رها کنید...</span>
-              ) : (
-                <span>برای آپلود کلیک کنید یا عکس را بکشید و رها کنید</span>
-              )}
-            </p>
-            <p className="text-xs text-gray-400">
-              فرمت‌های مجاز: {accept} – حداکثر {maxSize / 1024 / 1024}MB
-            </p>
+          <div className="flex flex-col items-center">
+            <Camera size={24} className="text-primary-600 mb-1" />
+            <span className="text-[10px] font-bold">آپلود عکس</span>
           </div>
         )}
       </div>
