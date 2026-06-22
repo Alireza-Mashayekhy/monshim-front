@@ -2,6 +2,7 @@ export const endpoints = {
   auth: {
     login: '/auth/login',
     otp: '/auth/send-otp',
+    registerBarber: '/auth/register-barber',
   },
 
   users: {

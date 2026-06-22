@@ -1,8 +1,9 @@
+// components/pages/auth/barbaer/step-2.tsx
+'use client';
+
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CheckCircle, Loader2, Locate, MapPin } from 'lucide-react';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
+import { MapPin } from 'lucide-react';
+import { useForm, useWatch } from 'react-hook-form';
 import * as z from 'zod';
 
 import FormProvider from '@/components/form/form-provider';
@@ -10,58 +11,83 @@ import RHFInput from '@/components/form/rhf-input';
 import RHFSelect from '@/components/form/rhf-select';
 import RHFTextArea from '@/components/form/rhf-textarea';
 import { Button } from '@/components/ui/button';
+import {
+  useCityList,
+  useProvinceList,
+} from '@/services/features/locations/hooks';
+import { useBarberSignupStore } from '@/store/useBarberSignupStore';
 
-export default function BarbaerStep2() {
-  const [isLocating, setIsLocating] = useState(false);
+interface Step2Props {
+  onSubmit: (data: any) => void;
+}
+
+export default function BarbaerStep2({ onSubmit }: Step2Props) {
+  const { shopName, provinceId, cityId, address, prevStep } =
+    useBarberSignupStore();
 
   const schema = z.object({
-    latitude: z.number().optional(),
-    longitude: z.number().optional(),
-    address: z.string(),
+    shopName: z.string().nonempty('نام آرایشگاه اجباری است'),
+    provinceId: z.string().nonempty('انتخاب استان اجباری است'), // قبول کردن null
+    cityId: z.string().nonempty('انتخاب شهر اجباری است'),
+    address: z.string().nonempty('آدرس اجباری است'),
   });
 
   const methods = useForm({
     defaultValues: {
-      latitude: undefined,
-      longitude: undefined,
-      address: '',
+      shopName: shopName || '',
+      provinceId: provinceId || '',
+      cityId: cityId || '',
+      address: address || '',
     },
     resolver: zodResolver(schema),
   });
 
-  const { setValue } = methods;
+  const selectedProvinceId = useWatch({
+    control: methods.control,
+    name: 'provinceId',
+  });
 
-  const handleGetLocation = () => {
-    if (!navigator.geolocation) {
-      toast.error('مرورگر شما از موقعیت مکانی پشتیبانی نمی‌کند.');
-      return;
-    }
+  // دریافت لیست استان‌ها
+  const { data: provinces } = useProvinceList();
+  // دریافت لیست شهرها بر اساس استان انتخاب‌شده
+  const { data: cities } = useCityList(parseInt(selectedProvinceId));
 
-    setIsLocating(true);
-    navigator.geolocation.getCurrentPosition(
-      position => {
-        const { latitude, longitude } = position.coords;
-        const mockAddress = `مراغه، خیابان قدس، کوچه ${Math.floor(Math.random() * 20) + 1}، پلاک ${Math.floor(Math.random() * 50)}`;
+  // اگر استان تغییر کرد، مقدار شهر را ریست کن
 
-        setValue('latitude', latitude);
-        setValue('longitude', longitude);
-        setValue('address', mockAddress);
-
-        setIsLocating(false);
-        toast.success('آدرس شما بر اساس موقعیت یافت شد.');
-      },
-      error => {
-        console.error(error);
-        setIsLocating(false);
-        toast.warning(
-          'دسترسی به موقعیت مکانی امکان‌پذیر نیست. لطفا آدرس را دستی وارد کنید.',
-        );
-      },
+  const onFormSubmit = (data: any) => {
+    const province = provinces?.data?.find(
+      (p: any) => p.id === data.provinceId,
     );
+    const city = cities?.data?.find((c: any) => c.id === data.cityId);
+
+    onSubmit({
+      shopName: data.shopName,
+      provinceId: data.provinceId,
+      provinceName: province?.name || '',
+      cityId: data.cityId,
+      cityName: city?.name || '',
+      address: data.address,
+    });
   };
 
+  // تبدیل لیست استان‌ها به فرمت مورد نیاز RHFSelect
+  const provinceOptions = provinces?.data?.map((p: any) => ({
+    value: p.id.toString(),
+    text: p.name,
+  }));
+
+  // تبدیل لیست شهرها به فرمت مورد نیاز RHFSelect
+  const cityOptions = cities?.data?.map((c: any) => ({
+    value: c.id.toString(),
+    text: c.name,
+  }));
+
   return (
-    <FormProvider methods={methods} className="space-y-6 animate-fade-in">
+    <FormProvider
+      methods={methods}
+      onSubmit={onFormSubmit}
+      className="space-y-6 animate-fade-in"
+    >
       <div className="text-center mb-6">
         <div className="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-3 text-orange-600 border border-orange-100 shadow-sm">
           <MapPin size={28} />
@@ -71,45 +97,40 @@ export default function BarbaerStep2() {
       </div>
 
       <div className="space-y-4">
-        <RHFInput name="barbaerName" label="نام آرایشگاه (تابلو)" />
-        <RHFSelect name="city" label="شهر" />
-        <div>
-          <div className="flex justify-between items-center mb-2">
-            <label className="block text-xs font-bold text-gray-700">
-              آدرس دقیق
-            </label>
-            <button
-              onClick={handleGetLocation}
-              className="text-xs text-primary-600 font-bold flex items-center gap-1 hover:text-primary-700"
-              disabled={isLocating}
-            >
-              {isLocating ? (
-                <Loader2 size={12} className="animate-spin" />
-              ) : (
-                <Locate size={12} />
-              )}
-              {isLocating ? 'در حال یافتن...' : 'دریافت آدرس از روی نقشه'}
-            </button>
-          </div>
-          <RHFTextArea
-            name="address"
-            label="آدرس"
-            placeholder={
-              methods.getValues('latitude')
-                ? 'آدرس به صورت خودکار پر شده است. می‌توانید آن را ویرایش کنید.'
-                : 'خیابان، کوچه، پلاک...'
-            }
-          />
+        <RHFInput name="shopName" label="نام آرایشگاه (تابلو)" />
 
-          {methods.getValues('latitude') && (
-            <p className="text-[10px] text-green-600 mt-1 flex items-center gap-1">
-              <CheckCircle size={10} /> آدرس شما بر اساس موقعیت مکانی یافت شد.
-            </p>
-          )}
-        </div>
+        <RHFSelect
+          name="provinceId"
+          label="استان"
+          items={provinceOptions}
+          placeholder="انتخاب استان..."
+        />
+
+        <RHFSelect
+          name="cityId"
+          label="شهر"
+          items={cityOptions}
+          placeholder={
+            selectedProvinceId ? 'انتخاب شهر...' : 'ابتدا استان را انتخاب کنید'
+          }
+          disabled={!selectedProvinceId}
+        />
+
+        <RHFTextArea
+          name="address"
+          label="آدرس دقیق"
+          placeholder="خیابان، کوچه، پلاک..."
+        />
       </div>
 
-      <Button type="submit">مرcحله بعد</Button>
+      <div className="fixed bottom-0 left-0 right-0 p-5 bg-white border-t border-gray-100 z-50">
+        <div className="max-w-lg mx-auto flex justify-between">
+          <Button type="button" variant="outline" onClick={prevStep}>
+            مرحله قبل
+          </Button>
+          <Button type="submit">مرحله بعد</Button>
+        </div>
+      </div>
     </FormProvider>
   );
 }

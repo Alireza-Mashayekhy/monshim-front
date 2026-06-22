@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 
-import { login, sendOtp } from './api';
+import { login, registerBarber, sendOtp } from './api';
 
 export function useLogin() {
   return useMutation({
@@ -11,5 +11,11 @@ export function useLogin() {
 export function useSendOtp() {
   return useMutation({
     mutationFn: sendOtp,
+  });
+}
+
+export function useRegisterBarber() {
+  return useMutation({
+    mutationFn: registerBarber,
   });
 }

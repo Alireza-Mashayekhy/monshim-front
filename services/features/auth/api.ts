@@ -21,3 +21,11 @@ export async function sendOtp(dto: sendOtpDto) {
 
   return data;
 }
+
+export async function registerBarber(dto: FormData) {
+  const { data } = await api.post(endpoints.auth.registerBarber, dto, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+
+  return data;
+}
