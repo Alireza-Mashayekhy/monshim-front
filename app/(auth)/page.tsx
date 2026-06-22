@@ -10,8 +10,10 @@ import {
   UserPlus,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import * as z from 'zod';
 
 import FormProvider from '@/components/form/form-provider';
@@ -31,6 +33,8 @@ export default function Login() {
 
   const sendOtpMutation = useSendOtp();
   const loginMutation = useLogin();
+
+  const router = useRouter();
 
   const schema = z.object({
     phone: z
@@ -70,10 +74,14 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      loginMutation.mutateAsync({ code, phone: methods.getValues().phone });
-      setStep(3);
-    } catch (error) {
+      await loginMutation.mutateAsync({
+        code,
+        phone: methods.getValues().phone,
+      });
+      router.push('/home');
+    } catch (error: any) {
       console.log(error);
+      if (error.status === 400) toast.error('کد وارد شده اشتباه است');
     }
   };
 
@@ -124,8 +132,11 @@ export default function Login() {
                 </Button>
               </FormProvider>
               <div className="mt-8 pt-6 border-t border-gray-100 flex flex-col items-center gap-3">
-                <Link href="/barbaer-signup" className="w-fit h-fit">
-                  <Button type="button" variant="link">
+                <Link href="/barbaer-signup" className="w-full">
+                  <button
+                    type="button"
+                    className="flex items-center justify-between w-full p-1 rounded-xl bg-orange-50 hover:bg-orange-100 transition-colors group border border-orange-100"
+                  >
                     <div className="flex items-center gap-3">
                       <div className="bg-white p-2 rounded-lg text-orange-500 shadow-sm">
                         <Scissors size={18} />
@@ -138,7 +149,7 @@ export default function Login() {
                       size={16}
                       className="text-orange-400 group-hover:-translate-x-1 transition-transform"
                     />
-                  </Button>
+                  </button>
                 </Link>
               </div>
             </>
@@ -164,12 +175,13 @@ export default function Login() {
                 </p>
               </div>
               <InputOTP
-                maxLength={5}
+                maxLength={4}
                 value={code}
                 onChange={value => setCode(value)}
-                dir="rtl"
+                dir="ltr"
+                id="input-otp-ltr"
               >
-                <InputOTPGroup className="w-full gap-2 ">
+                <InputOTPGroup className="w-full gap-2 flex-row-reverse">
                   <InputOTPSlot
                     index={0}
                     className="w-full h-11 border rounded-md"
@@ -186,16 +198,12 @@ export default function Login() {
                     index={3}
                     className="w-full h-11 border rounded-md"
                   />
-                  <InputOTPSlot
-                    index={4}
-                    className="w-full h-11 border rounded-md"
-                  />
                 </InputOTPGroup>
               </InputOTP>
               <Button
                 type="submit"
                 loading={loginMutation.isPending}
-                disabled={code.length !== 5}
+                disabled={code.length !== 4}
                 size="lg"
                 className="w-full"
               >

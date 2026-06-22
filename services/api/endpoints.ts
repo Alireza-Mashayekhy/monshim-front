@@ -13,4 +13,10 @@ export const endpoints = {
     list: '/categories',
     create: '/categories',
   },
+
+  locations: {
+    provinceList: '/locations/provinces',
+    searchCities: '/locations/cities',
+    cityList: (id: number) => `/locations/provinces/${id}/cities`,
+  },
 };
