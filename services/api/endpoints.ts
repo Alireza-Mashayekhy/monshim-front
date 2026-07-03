@@ -20,4 +20,8 @@ export const endpoints = {
     searchCities: '/locations/cities',
     cityList: (id: number) => `/locations/provinces/${id}/cities`,
   },
+
+  barber: {
+    list: '/barber',
+  },
 };

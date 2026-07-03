@@ -1,33 +1,40 @@
 'use client';
-import { ChevronDown, MapPin, Navigation, Star } from 'lucide-react';
+import { ChevronDown, Navigation } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useState } from 'react';
 
 import { LocationPickerModal } from '@/components/pages/home/LocationPickerModal';
-import { MOCK_BARBERS } from '@/constants';
+import BarberCard, {
+  BarberCardSkeleton,
+} from '@/components/shared/barber-card';
+import { useHomeBarberList } from '@/services/features/barber/hooks';
 import { useLocationStore } from '@/store/useLocationStore';
 
 export default function Home() {
-  const { provinceName, cityName } = useLocationStore();
+  const { provinceName, cityName, cityId } = useLocationStore();
+  const [showLocationModal, setShowLocationModal] = useState(false);
+
+  const {
+    data: barbers,
+    isLoading,
+    isError,
+    error,
+  } = useHomeBarberList({
+    cityId: cityId || undefined,
+    limit: 10,
+  });
 
   const bannerImages = [
     'https://images.unsplash.com/photo-1503951914875-befbb7135952?w=800&q=80',
     'https://images.unsplash.com/photo-1599351431202-1e0f0137899a?w=800&q=80',
   ];
-  const [showLocationModal, setShowLocationModal] = useState(false);
 
   const locationDisplayName = cityName
     ? `${cityName}، ${provinceName}`
     : 'انتخاب شهر';
 
-  const displayedBarbers = MOCK_BARBERS.filter(b => {
-    if (cityName) return b.city === cityName;
-    return true;
-  });
-
   return (
-    <>
+    <div>
       {/* Header */}
       <div className="px-5 py-2 bg-white sticky top-0 z-10 shadow-sm border-b border-gray-100">
         <div className="flex justify-between items-center">
@@ -49,7 +56,6 @@ export default function Home() {
       </div>
 
       {/* Banner Slider */}
-
       <div className="px-5 mt-4">
         <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 no-scrollbar rounded-3xl">
           {bannerImages.map((img, index) => (
@@ -69,58 +75,32 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Recommended Barbers - Optimized Smaller Cards */}
+      {/* Recommended Barbers */}
       <div className="px-5 mt-6 mb-8">
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-bold text-gray-800">پیشنهادها</h3>
         </div>
 
-        <div className="flex gap-3 overflow-x-auto no-scrollbar pb-4 -mx-5 px-5">
-          {displayedBarbers.length === 0 ? (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 overflow-x-auto no-scrollbar pb-4 -mx-5 px-5">
+          {isLoading ? (
+            // نمایش اسکلتون‌ها هنگام لودینگ
+            Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="min-w-[160px] w-[160px]">
+                <BarberCardSkeleton />
+              </div>
+            ))
+          ) : isError ? (
+            <div className="w-full text-center text-red-500 text-sm py-8">
+              خطا در بارگذاری: {error?.message || 'لطفاً مجدداً تلاش کنید'}
+            </div>
+          ) : barbers?.data?.length === 0 ? (
             <div className="w-full text-center text-gray-400 text-sm py-8 bg-gray-50 rounded-2xl mx-5">
               آرایشگری در این شهر یافت نشد.
             </div>
           ) : (
-            displayedBarbers
-              .filter(b => b.isVerified)
-              .map(barber => (
-                <Link
-                  key={barber.id}
-                  href={`/barber/${barber.id}`}
-                  className="bg-white border border-gray-100 p-2 rounded-2xl shadow-sm min-w-[160px] w-[160px] flex flex-col gap-2 cursor-pointer active:scale-[0.98] transition-transform"
-                >
-                  <div className="relative aspect-square">
-                    <Image
-                      fill
-                      src={barber.image}
-                      alt={barber.name}
-                      className="w-full h-full rounded-xl object-cover bg-gray-200"
-                    />
-                    <div className="absolute bottom-1 right-1 bg-white/95 backdrop-blur-sm px-1.5 py-0.5 rounded-lg text-[10px] font-bold text-gray-800 flex items-center gap-0.5 shadow-sm">
-                      <span>{barber.rating}</span>
-                      <Star
-                        size={8}
-                        fill="currentColor"
-                        className="text-yellow-500"
-                      />
-                    </div>
-                  </div>
-                  <div className="px-1">
-                    <h4 className="font-bold text-gray-800 text-xs truncate">
-                      {barber.shopName}
-                    </h4>
-                    <p className="text-[10px] text-gray-500 truncate mt-0.5">
-                      {barber.name}
-                    </p>
-                    <div className="flex justify-between items-center mt-2">
-                      <p className="text-[9px] text-gray-400 flex items-center gap-0.5 truncate">
-                        <MapPin size={10} />
-                        {barber.city}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              ))
+            barbers?.data?.map(barber => (
+              <BarberCard key={barber.id} barber={barber} />
+            ))
           )}
         </div>
       </div>
@@ -129,6 +109,6 @@ export default function Home() {
         open={showLocationModal}
         onOpenChange={setShowLocationModal}
       />
-    </>
+    </div>
   );
 }

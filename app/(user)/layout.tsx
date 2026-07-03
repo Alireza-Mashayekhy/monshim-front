@@ -21,7 +21,7 @@ export default function UserLayout({
 
   return (
     <div className="min-h-screen bg-gray-50 flex justify-center w-full">
-      <div className="w-full max-w-md bg-white shadow-xl min-h-screen relative flex flex-col">
+      <div className="w-full bg-white shadow-xl min-h-screen relative flex flex-col">
         {/* Main Content Area */}
         <div className={`flex-1 overflow-y-auto ${showNav ? 'pb-20' : ''}`}>
           {children}
@@ -41,7 +41,7 @@ export default function UserLayout({
 
         {/* Bottom Navigation */}
         {showNav && (
-          <div className="fixed bottom-0 w-full max-w-md bg-white border-t border-gray-100 px-6 py-3 flex justify-between items-center z-50">
+          <div className="fixed bottom-0 w-full bg-white border-t border-gray-100 px-6 py-3 flex justify-between items-center z-50">
             <Link
               href="/home"
               className={`flex flex-col items-center gap-1 ${isActive('/home') ? 'text-primary-600' : 'text-gray-400'}`}
