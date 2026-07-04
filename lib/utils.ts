@@ -4,3 +4,21 @@ import { twMerge } from 'tailwind-merge';
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+export const formatPrice = (value: number | string): string => {
+  const num = typeof value === 'string' ? parseFloat(value) : value;
+  return Math.floor(num).toLocaleString();
+};
+
+export const getNext7Days = (): { date: string; label: string }[] => {
+  const days = [];
+  const now = new Date();
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(now);
+    d.setDate(now.getDate() + i);
+    const dateStr = d.toISOString().split('T')[0];
+    const label = d.toLocaleDateString('fa-IR', { weekday: 'short' });
+    days.push({ date: dateStr, label });
+  }
+  return days;
+};

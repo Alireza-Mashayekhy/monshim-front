@@ -23,5 +23,11 @@ export const endpoints = {
 
   barber: {
     list: '/barber',
+    detail: (id: number) => `/barber/${id}`,
+  },
+
+  booking: {
+    create: '/booking',
+    availableTimes: '/bookings/available-times',
   },
 };

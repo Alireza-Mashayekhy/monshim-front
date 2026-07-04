@@ -23,15 +23,18 @@ export async function proxy(request: NextRequest) {
   }
 
   try {
-    const payload = decodeJwt(token);
-    const roles = payload?.roles as string[] | string | undefined;
-
-    // تبدیل roles به آرایه (اگر رشته باشد)
     let roleArray: string[] = [];
-    if (Array.isArray(roles)) {
-      roleArray = roles;
-    } else if (typeof roles === 'string') {
-      roleArray = [roles];
+
+    if (token) {
+      const payload = decodeJwt(token);
+      const roles = payload?.roles as string[] | string | undefined;
+
+      // تبدیل roles به آرایه (اگر رشته باشد)
+      if (Array.isArray(roles)) {
+        roleArray = roles;
+      } else if (typeof roles === 'string') {
+        roleArray = [roles];
+      }
     }
 
     if (roleArray.length === 0 && !refreshToken) {

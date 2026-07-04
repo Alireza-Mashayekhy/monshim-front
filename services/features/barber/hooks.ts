@@ -1,6 +1,6 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 
-import { barberList } from './api';
+import { barberList, getBarberById } from './api';
 
 export const useBarberList = (params: {
   cityId?: number;
@@ -41,5 +41,14 @@ export const useHomeBarberList = (params: {
       }),
     staleTime: 2 * 60 * 1000,
     enabled: true,
+  });
+};
+
+export const useBarber = (id: number) => {
+  return useQuery({
+    queryKey: ['barber', id],
+    queryFn: () => getBarberById(id),
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
   });
 };
