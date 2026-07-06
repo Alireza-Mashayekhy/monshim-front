@@ -36,9 +36,10 @@ export interface Barber {
 
 export interface User {
   id: number;
-  name: string;
+  fullName: string;
   walletBalance: number;
   roles: string[];
+  phone: string;
 }
 
 export interface Notification {

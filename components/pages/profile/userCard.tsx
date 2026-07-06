@@ -1,0 +1,26 @@
+// components/profile/UserCard.tsx
+'use client';
+
+import { Button } from '@/components/ui/button';
+import { User } from '@/services/features/barber/types';
+
+interface UserCardProps {
+  user?: { data: User };
+  onEdit: () => void;
+}
+
+export const UserCard: React.FC<UserCardProps> = ({ user, onEdit }) => {
+  return (
+    <div className="flex items-center justify-between gap-4 mb-6">
+      <div>
+        <h2 className="text-lg font-bold text-gray-900">
+          {user?.data?.fullName || 'کاربر'}
+        </h2>
+        <p className="text-gray-500 text-sm font-mono dir-ltr">
+          {user?.data?.phone}
+        </p>
+      </div>
+      <Button onClick={onEdit}>ویرایش</Button>
+    </div>
+  );
+};

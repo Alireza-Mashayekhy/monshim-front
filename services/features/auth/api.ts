@@ -29,3 +29,8 @@ export async function registerBarber(dto: FormData) {
 
   return data;
 }
+
+export async function fetchMe() {
+  const { data } = await api.get(endpoints.auth.me);
+  return data;
+}

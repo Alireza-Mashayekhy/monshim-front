@@ -22,3 +22,5 @@ export const getNext7Days = (): { date: string; label: string }[] => {
   }
   return days;
 };
+
+export const DefaultImage = '/placeholder.webp';

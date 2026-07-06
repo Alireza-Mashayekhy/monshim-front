@@ -1,6 +1,6 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
-import { login, registerBarber, sendOtp } from './api';
+import { fetchMe, login, registerBarber, sendOtp } from './api';
 
 export function useLogin() {
   return useMutation({
@@ -19,3 +19,11 @@ export function useRegisterBarber() {
     mutationFn: registerBarber,
   });
 }
+
+export const useMe = () => {
+  return useQuery({
+    queryKey: ['me'],
+    queryFn: fetchMe,
+    staleTime: 5 * 60 * 1000, // 5 دقیقه کش
+  });
+};

@@ -85,9 +85,7 @@ export default function Home() {
           {isLoading ? (
             // نمایش اسکلتون‌ها هنگام لودینگ
             Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="min-w-[160px] w-[160px]">
-                <BarberCardSkeleton />
-              </div>
+              <BarberCardSkeleton key={index} />
             ))
           ) : isError ? (
             <div className="w-full text-center text-red-500 text-sm py-8">

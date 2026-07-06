@@ -3,11 +3,13 @@ export const endpoints = {
     login: '/auth/login',
     otp: '/auth/send-otp',
     registerBarber: '/auth/register-barber',
+    me: '/auth/me',
   },
 
   users: {
     list: '/users',
     detail: (id: number) => `/users/${id}`,
+    edit: `/users/me`,
   },
 
   categories: {

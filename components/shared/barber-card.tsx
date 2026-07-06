@@ -38,7 +38,7 @@ export default function BarberCard({ barber }: { barber: BarberResponse }) {
 }
 
 export const BarberCardSkeleton = () => (
-  <div className="animate-pulse bg-white rounded-2xl border border-gray-100 p-3 shadow-sm">
+  <div className="animate-pulse bg-white rounded-2xl border border-gray-100 p-3 shadow-sm w-full">
     <div className="aspect-square bg-gray-200 rounded-xl"></div>
     <div className="mt-2 h-4 bg-gray-200 rounded w-3/4"></div>
     <div className="mt-1 h-3 bg-gray-200 rounded w-1/2"></div>
