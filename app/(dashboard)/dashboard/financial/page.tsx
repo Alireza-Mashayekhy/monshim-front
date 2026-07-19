@@ -1,18 +1,14 @@
 // app/(dashboard)/financial/page.tsx
 'use client';
 
-import { ArrowDownLeft, Plus, Wallet } from 'lucide-react';
-import { useState } from 'react';
-
 import DashboardShell from '@/components/dashboard/layout/dashboard-shell';
 import AppCard from '@/components/shared/app-card';
 import FadeIn from '@/components/shared/fade-in';
-import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/lib/utils';
 
 export default function FinancialPage() {
-  const [showCardModal, setShowCardModal] = useState(false);
-  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  // const [showCardModal, setShowCardModal] = useState(false);
+  // const [showWithdrawModal, setShowWithdrawModal] = useState(false);
 
   const transactions = [];
 
@@ -20,7 +16,8 @@ export default function FinancialPage() {
     <DashboardShell>
       <FadeIn>
         <AppCard className="bg-linear-to-br from-primary to-primary-700 text-white">
-          <div className="flex justify-between items-start">
+          <div></div>
+          {/* <div className="flex justify-between items-start">
             <div>
               <p className="text-white/70">موجودی کیف پول</p>
               <h2 className="mt-2 text-4xl font-bold">{formatPrice(0)}</h2>
@@ -43,7 +40,7 @@ export default function FinancialPage() {
             >
               <Plus size={16} /> مدیریت کارت‌ها
             </Button>
-          </div>
+          </div> */}
         </AppCard>
       </FadeIn>
 
@@ -77,11 +74,11 @@ export default function FinancialPage() {
         </div>
       </FadeIn>
 
-      <CardModal open={showCardModal} onOpenChange={setShowCardModal} />
+      {/* <CardModal open={showCardModal} onOpenChange={setShowCardModal} />
       <WithdrawModal
         open={showWithdrawModal}
         onOpenChange={setShowWithdrawModal}
-      />
+      /> */}
     </DashboardShell>
   );
 }
