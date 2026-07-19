@@ -24,3 +24,11 @@ export const getNext7Days = (): { date: string; label: string }[] => {
 };
 
 export const DefaultImage = '/placeholder.webp';
+
+export const formatNumberInput = (value: string) => {
+  return value.replace(/\B(?=(\d{3})+(?!\d))/g, '،');
+};
+
+export const unformatNumberInput = (value: string) => {
+  return parseFloat(value.replace(/,/g, '')) || 0;
+};

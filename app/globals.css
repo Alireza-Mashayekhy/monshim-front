@@ -187,3 +187,29 @@ html {
 body {
   overflow-x: hidden;
 }
+
+@layer components {
+  .surface {
+    @apply bg-white border border-slate-200 rounded-3xl shadow-sm;
+  }
+
+  .surface-hover {
+    @apply transition-all duration-300 hover:shadow-md hover:-translate-y-0.5;
+  }
+
+  .page-padding {
+    @apply px-4 md:px-6 xl:px-8;
+  }
+
+  .section-gap {
+    @apply space-y-6;
+  }
+
+  .glass {
+    @apply bg-white/80 backdrop-blur-xl;
+  }
+
+  .safe-bottom {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 88px);
+  }
+}
