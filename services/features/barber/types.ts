@@ -19,19 +19,40 @@ export interface Service {
   durationMinutes: number;
 }
 
+// types/barber.types.ts
 export interface Barber {
   id: number;
-  name: string;
-  shopName: string;
-  image: string | null;
+  fullName: string;
+  phone: string;
+  email?: string;
+  salonName: string;
+  provinceId?: number | null;
+  cityId?: number | null;
+  provinceName?: string | null;
+  cityName?: string | null;
   address: string;
-  bio: string;
-  rating: number;
-  reviewCount: number;
-  services: Service[];
-  portfolio: string[];
-  city: string | null;
-  province: string | null;
+  bio?: string | null;
+  profileImage?: string | null;
+  portfolioImages?: string[];
+  workStartTime?: string | null;
+  workEndTime?: string | null;
+  isApproved: boolean;
+  rejectionReason?: string | null;
+  createdAt: string;
+}
+
+export interface UpdateBarberProfile {
+  fullName?: string;
+  salonName?: string;
+  provinceId?: number | null;
+  cityId?: number | null;
+  address?: string;
+  bio?: string | null;
+  workStartTime?: string | null;
+  workEndTime?: string | null;
+  profileImage?: string | null;
+  isApproved?: boolean;
+  rejectionReason?: string | null;
 }
 
 export interface User {

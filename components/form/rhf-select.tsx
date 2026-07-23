@@ -1,3 +1,4 @@
+// components/form/rhf-select.tsx
 import { Controller, useFormContext } from 'react-hook-form';
 
 import {
@@ -25,32 +26,35 @@ export default function RHFSelect({ ...other }: RHFSelectProps) {
     <Controller
       name={other.name}
       control={control}
-      render={({ field, fieldState }) => (
-        <Field data-invalid={fieldState.invalid}>
-          <FieldLabel htmlFor={field.name}>{other?.label}</FieldLabel>
-          <Select
-            onValueChange={field.onChange}
-            value={field.value}
-            defaultValue={field.value}
-          >
-            <SelectTrigger
-              className={cn('w-full', other.className)}
-              aria-invalid={fieldState.invalid}
-              disabled={other.disabled}
+      render={({ field, fieldState }) => {
+        const currentValue = field.value ?? '';
+        return (
+          <Field data-invalid={fieldState.invalid}>
+            <FieldLabel htmlFor={field.name}>{other?.label}</FieldLabel>
+            <Select
+              key={currentValue} // ← کلید جدید: با تغییر مقدار، Select بازسازی می‌شود
+              onValueChange={field.onChange}
+              value={currentValue}
             >
-              <SelectValue placeholder={other?.placeholder} />
-            </SelectTrigger>
-            <SelectContent>
-              {other.items?.map((item, index) => (
-                <SelectItem key={index} value={item.value}>
-                  {item?.text || item.value}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
-        </Field>
-      )}
+              <SelectTrigger
+                className={cn('w-full', other.className)}
+                aria-invalid={fieldState.invalid}
+                disabled={other.disabled}
+              >
+                <SelectValue placeholder={other?.placeholder} />
+              </SelectTrigger>
+              <SelectContent>
+                {other.items?.map(item => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item?.text || item.value}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+          </Field>
+        );
+      }}
     />
   );
 }

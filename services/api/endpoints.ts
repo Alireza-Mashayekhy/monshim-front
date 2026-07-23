@@ -26,6 +26,9 @@ export const endpoints = {
   barber: {
     list: '/barber',
     detail: (id: number) => `/barber/${id}`,
+    myPofile: '/barber/profile/me',
+    updateProfile: '/barber/profile/me',
+    updateProfileImage: '/barber/profile/image',
   },
 
   booking: {

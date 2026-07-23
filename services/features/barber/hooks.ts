@@ -1,6 +1,19 @@
-import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
+import { toast } from 'sonner';
 
-import { barberList, getBarberById } from './api';
+import {
+  barberList,
+  getBarberById,
+  getMyBarberProfile,
+  updateBarberProfile,
+  uploadProfileImage,
+} from './api';
+import { UpdateBarberProfile } from './types';
 
 export const useBarberList = (params: {
   cityId?: number;
@@ -50,5 +63,43 @@ export const useBarber = (id: number) => {
     queryFn: () => getBarberById(id),
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useMyBarberProfile = () => {
+  return useQuery({
+    queryKey: ['my-barber-profile'],
+    queryFn: getMyBarberProfile,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useUpdateBarberProfile = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (dto: UpdateBarberProfile) => updateBarberProfile(dto),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-barber-profile'] });
+      toast.success('پروفایل با موفقیت به‌روزرسانی شد.');
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.response?.data?.message || 'خطا در به‌روزرسانی پروفایل',
+      );
+    },
+  });
+};
+
+export const useUploadProfileImage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (file: File) => uploadProfileImage(file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['my-barber-profile'] });
+      toast.success('عکس پروفایل با موفقیت آپلود شد.');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'خطا در آپلود عکس');
+    },
   });
 };

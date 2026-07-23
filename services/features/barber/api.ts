@@ -2,7 +2,7 @@ import { api } from '@/services/api/client';
 import { endpoints } from '@/services/api/endpoints';
 import { ApiListResponse, ApiSingleResponse } from '@/services/api/types';
 
-import { Barber, BarberResponse } from './types';
+import { Barber, BarberResponse, UpdateBarberProfile } from './types';
 
 export async function barberList(query?: {
   page: number;
@@ -24,4 +24,32 @@ export const getBarberById = async (id: number) => {
   const url = endpoints.barber.detail(id);
   const { data } = await api.get<ApiSingleResponse<Barber>>(url);
   return data;
+};
+
+export const getMyBarberProfile = async () => {
+  const { data } = await api.get<ApiSingleResponse<Barber>>(
+    endpoints.barber.myPofile,
+  );
+  return data;
+};
+
+export const updateBarberProfile = async (dto: UpdateBarberProfile) => {
+  const { data } = await api.patch<ApiSingleResponse<Barber>>(
+    endpoints.barber.updateProfile,
+    dto,
+  );
+  return data;
+};
+
+export const uploadProfileImage = async (file: File): Promise<string> => {
+  const formData = new FormData();
+  formData.append('image', file);
+  const { data } = await api.post(
+    endpoints.barber.updateProfileImage,
+    formData,
+    {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    },
+  );
+  return data.imageUrl;
 };
