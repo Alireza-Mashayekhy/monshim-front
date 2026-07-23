@@ -2,7 +2,12 @@ import { api } from '@/services/api/client';
 import { endpoints } from '@/services/api/endpoints';
 import { ApiListResponse, ApiSingleResponse } from '@/services/api/types';
 
-import { Barber, BarberResponse, UpdateBarberProfile } from './types';
+import {
+  Barber,
+  BarberProfile,
+  BarberResponse,
+  UpdateBarberProfile,
+} from './types';
 
 export async function barberList(query?: {
   page: number;
@@ -27,14 +32,14 @@ export const getBarberById = async (id: number) => {
 };
 
 export const getMyBarberProfile = async () => {
-  const { data } = await api.get<ApiSingleResponse<Barber>>(
+  const { data } = await api.get<ApiSingleResponse<BarberProfile>>(
     endpoints.barber.myPofile,
   );
   return data;
 };
 
 export const updateBarberProfile = async (dto: UpdateBarberProfile) => {
-  const { data } = await api.patch<ApiSingleResponse<Barber>>(
+  const { data } = await api.patch<ApiSingleResponse<BarberProfile>>(
     endpoints.barber.updateProfile,
     dto,
   );

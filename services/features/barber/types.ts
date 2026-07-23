@@ -1,7 +1,3 @@
-export interface BarberProfile {
-  profileImage: string;
-  salonName: string;
-}
 export interface BarberResponse {
   id: string;
   barberProfile: BarberProfile;
@@ -19,8 +15,22 @@ export interface Service {
   durationMinutes: number;
 }
 
-// types/barber.types.ts
 export interface Barber {
+  id: number;
+  name: string;
+  shopName: string;
+  image: string | null;
+  address: string;
+  bio: string;
+  rating: number;
+  reviewCount: number;
+  services: Service[];
+  portfolio: string[];
+  city: string | null;
+  province: string | null;
+}
+
+export interface BarberProfile {
   id: number;
   fullName: string;
   phone: string;
