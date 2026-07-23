@@ -2,13 +2,13 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { X } from 'lucide-react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
 import FormProvider from '@/components/form/form-provider';
 import RHFInput from '@/components/form/rhf-input';
+import RHFNumberInput from '@/components/form/rhf-number-input';
 import RHFSelect from '@/components/form/rhf-select';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,7 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { formatNumberInput, unformatNumberInput } from '@/lib/utils';
+import { unformatNumberInput } from '@/lib/utils';
 import {
   useCreateService,
   useUpdateService,
@@ -69,7 +69,7 @@ export function ServiceModal({
     if (editingService) {
       reset({
         name: editingService.name,
-        price: formatNumberInput(editingService.price.toString()),
+        price: editingService.price,
         duration: editingService.durationMinutes.toString(),
       });
     } else {
@@ -109,12 +109,6 @@ export function ServiceModal({
           <DialogTitle className="font-bold text-lg text-gray-800">
             {editingService ? 'ویرایش خدمت' : 'افزودن خدمت جدید'}
           </DialogTitle>
-          <button
-            onClick={() => onOpenChange(false)}
-            className="text-gray-400 hover:text-gray-600"
-          >
-            <X size={20} />
-          </button>
         </DialogHeader>
 
         <FormProvider
@@ -127,11 +121,13 @@ export function ServiceModal({
             label="نام خدمت"
             placeholder="مثلاً کوتاهی مو"
           />
-          <RHFInput
+          <RHFNumberInput
             name="price"
             label="قیمت (تومان)"
+            outputType="string"
             placeholder="مثلاً ۱۵۰۰۰۰"
-            inputMode="numeric"
+            allowDecimal={false}
+            max={9999999999}
           />
           <RHFSelect
             name="duration"
