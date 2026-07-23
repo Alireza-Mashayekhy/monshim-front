@@ -32,4 +32,12 @@ export const endpoints = {
     create: '/booking',
     availableTimes: '/bookings/available-times',
   },
+
+  services: {
+    list: '/services/my-services',
+    create: '/services',
+    detail: (id: number) => `/services/${id}`,
+    edit: (id: number) => `/services/${id}`,
+    delete: (id: number) => `/services/${id}`,
+  },
 };

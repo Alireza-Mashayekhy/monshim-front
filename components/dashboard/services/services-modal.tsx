@@ -1,4 +1,4 @@
-// components/dashboard/services/ServiceModal.tsx
+// components/dashboard/services/services-modal.tsx
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,7 +17,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { formatNumberInput } from '@/lib/utils';
+import { formatNumberInput, unformatNumberInput } from '@/lib/utils';
+import {
+  useCreateService,
+  useUpdateService,
+} from '@/services/features/services/hooks';
+
+interface ServiceModalProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  editingService?: any; // Service | null
+}
 
 const schema = z.object({
   name: z.string().min(1, 'نام خدمت الزامی است'),
@@ -26,12 +36,6 @@ const schema = z.object({
 });
 
 type FormData = z.infer<typeof schema>;
-
-interface ServiceModalProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  editingService: any;
-}
 
 const durationOptions = [
   { value: '15', label: '۱۵ دقیقه' },
@@ -47,6 +51,9 @@ export function ServiceModal({
   onOpenChange,
   editingService,
 }: ServiceModalProps) {
+  const createMutation = useCreateService();
+  const updateMutation = useUpdateService();
+
   const methods = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -71,51 +78,39 @@ export function ServiceModal({
   }, [editingService, reset, open]);
 
   const onSubmit = (data: FormData) => {
-    console.log(data);
-    // const price = unformatNumberInput(data.price);
-    // let updatedServices = [...(currentBarber?.services || [])];
-    // if (editingService) {
-    //   updatedServices = updatedServices.map(s =>
-    //     s.id === editingService.id
-    //       ? {
-    //           ...s,
-    //           name: data.name,
-    //           price,
-    //           durationMinutes: parseInt(data.duration),
-    //         }
-    //       : s,
-    //   );
-    // } else {
-    //   updatedServices.push({
-    //     id: Date.now().toString(),
-    //     name: data.name,
-    //     price,
-    //     durationMinutes: parseInt(data.duration),
-    //   });
-    // }
-    // updateBarber(barberId, { services: updatedServices });
-    // addNotification({
-    //   title: 'موفق',
-    //   message: 'لیست خدمات بروزرسانی شد.',
-    //   type: 'SUCCESS',
-    // });
-    // onOpenChange(false);
+    const price = unformatNumberInput(data.price);
+    const dto = {
+      name: data.name,
+      price,
+      durationMinutes: parseInt(data.duration),
+      isActive: true,
+    };
+
+    if (editingService) {
+      updateMutation.mutate(
+        { id: editingService.id, dto },
+        {
+          onSuccess: () => onOpenChange(false),
+        },
+      );
+    } else {
+      createMutation.mutate(dto, {
+        onSuccess: () => onOpenChange(false),
+      });
+    }
   };
 
-  const handleClose = () => {
-    reset();
-    onOpenChange(false);
-  };
+  const isLoading = createMutation.isPending || updateMutation.isPending;
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md rounded-3xl p-6">
         <DialogHeader className="flex flex-row justify-between items-center">
           <DialogTitle className="font-bold text-lg text-gray-800">
             {editingService ? 'ویرایش خدمت' : 'افزودن خدمت جدید'}
           </DialogTitle>
           <button
-            onClick={handleClose}
+            onClick={() => onOpenChange(false)}
             className="text-gray-400 hover:text-gray-600"
           >
             <X size={20} />
@@ -144,8 +139,12 @@ export function ServiceModal({
             items={durationOptions}
             placeholder="انتخاب مدت زمان"
           />
-          <Button type="submit" className="w-full">
-            {editingService ? 'ویرایش' : 'افزودن'}
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading
+              ? 'در حال ذخیره...'
+              : editingService
+                ? 'ویرایش'
+                : 'افزودن'}
           </Button>
         </FormProvider>
       </DialogContent>
