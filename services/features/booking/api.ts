@@ -4,7 +4,7 @@ import { endpoints } from '@/services/api/endpoints';
 import { ApiListResponse } from '@/services/api/types';
 
 import { WorkHours } from '../barber/types';
-import { Booking } from './types';
+import { Booking, BookingQueryParams } from './types';
 
 export interface CreateBookingDto {
   barberId: number;
@@ -32,5 +32,42 @@ export const getAvailableSlots = async (
       params: { barberId, date, serviceId },
     },
   );
+  return data;
+};
+
+export const getBarberBookings = async (
+  params: BookingQueryParams,
+): Promise<ApiListResponse<Booking>> => {
+  const { data } = await api.get('/bookings/barber/my', { params });
+  return data;
+};
+
+// دریافت نوبت‌های یک آرایشگر خاص (برای ادمین)
+export const getBarberBookingsById = async (
+  barberId: number,
+  params: BookingQueryParams,
+): Promise<ApiListResponse<Booking>> => {
+  const { data } = await api.get(`/bookings/barber/${barberId}`, { params });
+  return data;
+};
+
+// به‌روزرسانی وضعیت نوبت
+export const updateBookingStatus = async (
+  id: string,
+  status: Booking['status'],
+): Promise<Booking> => {
+  const { data } = await api.patch(`/bookings/${id}/status`, { status });
+  return data;
+};
+
+// تأیید نوبت توسط آرایشگر (اختیاری)
+export const confirmBooking = async (id: string): Promise<Booking> => {
+  const { data } = await api.patch(`/bookings/${id}/confirm`);
+  return data;
+};
+
+// لغو نوبت توسط مشتری
+export const cancelBooking = async (id: string): Promise<Booking> => {
+  const { data } = await api.patch(`/bookings/${id}/cancel`);
   return data;
 };

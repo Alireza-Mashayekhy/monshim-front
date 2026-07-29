@@ -1,7 +1,17 @@
 // services/features/booking/hooks.ts
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
-import { createBooking, CreateBookingDto, getAvailableSlots } from './api';
+import {
+  cancelBooking,
+  confirmBooking,
+  createBooking,
+  CreateBookingDto,
+  getAvailableSlots,
+  getBarberBookings,
+  updateBookingStatus,
+} from './api';
+import { Booking, BookingQueryParams } from './types';
 
 export const useAvailableSlots = (
   barberId: string,
@@ -24,6 +34,57 @@ export const useCreateBooking = () => {
     mutationFn: (dto: CreateBookingDto) => createBooking(dto),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['bookings'] });
+    },
+  });
+};
+
+export const useBarberBookings = (params: BookingQueryParams) => {
+  return useQuery({
+    queryKey: ['barber-bookings', params],
+    queryFn: () => getBarberBookings(params),
+    staleTime: 2 * 60 * 1000,
+  });
+};
+
+export const useUpdateBookingStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, status }: { id: string; status: Booking['status'] }) =>
+      updateBookingStatus(id, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['barber-bookings'] });
+      toast.success('وضعیت نوبت با موفقیت تغییر کرد.');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'خطا در تغییر وضعیت نوبت');
+    },
+  });
+};
+
+export const useConfirmBooking = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => confirmBooking(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['barber-bookings'] });
+      toast.success('نوبت با موفقیت تأیید شد.');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'خطا در تأیید نوبت');
+    },
+  });
+};
+
+export const useCancelBooking = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => cancelBooking(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['barber-bookings'] });
+      toast.success('نوبت با موفقیت لغو شد.');
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'خطا در لغو نوبت');
     },
   });
 };
