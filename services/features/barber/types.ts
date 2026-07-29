@@ -80,3 +80,11 @@ export interface Notification {
 }
 
 export type PaymentMethod = 'ONLINE' | 'WALLET';
+
+export interface WorkHours {
+  id?: string;
+  barberId?: string;
+  dayOfWeek: number; // 0=شنبه ... 6=جمعه
+  startTime: string; // HH:mm
+  endTime: string; // HH:mm
+}

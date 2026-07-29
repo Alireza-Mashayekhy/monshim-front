@@ -10,10 +10,12 @@ import {
   barberList,
   getBarberById,
   getMyBarberProfile,
+  getWorkHours,
   updateBarberProfile,
+  updateWorkHours,
   uploadProfileImage,
 } from './api';
-import { UpdateBarberProfile } from './types';
+import { UpdateBarberProfile, WorkHours } from './types';
 
 export const useBarberList = (params: {
   cityId?: number;
@@ -100,6 +102,31 @@ export const useUploadProfileImage = () => {
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'خطا در آپلود عکس');
+    },
+  });
+};
+
+// services/features/barber/hooks.ts
+export const useWorkHours = () => {
+  return useQuery({
+    queryKey: ['work-hours'],
+    queryFn: getWorkHours,
+    staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useUpdateWorkHours = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (hours: { hours: WorkHours[] }) => updateWorkHours(hours),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['work-hours'] });
+      toast.success('ساعات کاری با موفقیت به‌روز شد.');
+    },
+    onError: (error: any) => {
+      toast.error(
+        error.response?.data?.message || 'خطا در به‌روزرسانی ساعات کاری',
+      );
     },
   });
 };

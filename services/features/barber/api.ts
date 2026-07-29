@@ -7,6 +7,7 @@ import {
   BarberProfile,
   BarberResponse,
   UpdateBarberProfile,
+  WorkHours,
 } from './types';
 
 export async function barberList(query?: {
@@ -57,4 +58,19 @@ export const uploadProfileImage = async (file: File): Promise<string> => {
     },
   );
   return data.imageUrl;
+};
+
+export const getWorkHours = async () => {
+  const { data } = await api.get<ApiListResponse<WorkHours>>(
+    endpoints.barber.workHours,
+  );
+  return data;
+};
+
+export const updateWorkHours = async (dto: { hours: WorkHours[] }) => {
+  const { data } = await api.post<ApiListResponse<WorkHours>>(
+    endpoints.barber.updateWorkHours,
+    dto,
+  );
+  return data;
 };

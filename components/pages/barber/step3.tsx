@@ -1,13 +1,14 @@
-// components/booking/Step3DateTime.tsx
+// components/pages/barber/step3.tsx
 import { ArrowRight, Calendar, Clock } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { getNext7Days } from '@/lib/utils';
+import { WorkHours } from '@/services/features/barber/types';
 
 interface Step3DateTimeProps {
   selectedDate: string | null;
   selectedTime: string | null;
-  availableTimes: string[];
+  availableTimes: WorkHours[] | undefined;
   timesLoading: boolean;
   onSelectDate: (date: string) => void;
   onSelectTime: (time: string) => void;
@@ -31,6 +32,7 @@ export const Step3DateTime: React.FC<Step3DateTimeProps> = ({
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
+      {/* هدر */}
       <div className="p-5 border-b border-gray-100 sticky top-0 bg-white z-10 flex items-center gap-3">
         <button
           onClick={onBack}
@@ -45,6 +47,7 @@ export const Step3DateTime: React.FC<Step3DateTimeProps> = ({
       </div>
 
       <div className="flex-1 p-5 space-y-8 overflow-y-auto pb-24">
+        {/* انتخاب روز */}
         <div>
           <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
             <Calendar size={18} className="text-primary-600" /> روز را انتخاب
@@ -56,7 +59,7 @@ export const Step3DateTime: React.FC<Step3DateTimeProps> = ({
                 key={d.date}
                 onClick={() => {
                   onSelectDate(d.date);
-                  onSelectTime('');
+                  onSelectTime(''); // ریست ساعت
                 }}
                 className={`min-w-[85px] p-4 rounded-2xl border transition-all flex flex-col items-center gap-1 ${
                   selectedDate === d.date
@@ -77,6 +80,7 @@ export const Step3DateTime: React.FC<Step3DateTimeProps> = ({
           </div>
         </div>
 
+        {/* انتخاب ساعت */}
         <div
           className={`transition-opacity duration-300 ${selectedDate ? 'opacity-100' : 'opacity-50 pointer-events-none'}`}
         >
@@ -85,26 +89,26 @@ export const Step3DateTime: React.FC<Step3DateTimeProps> = ({
           </h3>
           {timesLoading ? (
             <div className="text-gray-500">در حال بارگذاری زمان‌ها...</div>
-          ) : availableTimes.length === 0 ? (
+          ) : availableTimes?.length === 0 ? (
             <div className="text-gray-400">
               هیچ زمانی در این تاریخ آزاد نیست
             </div>
           ) : (
             <div className="flex gap-3 overflow-x-auto no-scrollbar pb-4 px-1">
-              {availableTimes.map(time => (
+              {availableTimes?.map(time => (
                 <button
-                  key={time}
-                  onClick={() => onSelectTime(time)}
+                  key={time.id} // time یک رشته است و یکتا
+                  onClick={() => onSelectTime(time.id?.toString() || '')}
                   className={`min-w-[90px] p-4 rounded-2xl flex flex-col items-center justify-center border transition-all active:scale-95 ${
-                    selectedTime === time
+                    selectedTime === time.id
                       ? 'bg-gray-900 text-white border-gray-900 shadow-lg scale-105'
                       : 'bg-white text-gray-700 border-gray-200 hover:border-primary-500 hover:text-primary-600'
                   }`}
                 >
                   <span
-                    className={`font-bold text-lg dir-ltr ${selectedTime === time ? 'text-white' : 'text-gray-800'}`}
+                    className={`font-bold text-lg dir-ltr ${selectedTime === time.id ? 'text-white' : 'text-gray-800'}`}
                   >
-                    {time}
+                    {time.startTime}
                   </span>
                   <span className="text-[10px] text-gray-400">آزاد</span>
                 </button>
@@ -114,6 +118,7 @@ export const Step3DateTime: React.FC<Step3DateTimeProps> = ({
         </div>
       </div>
 
+      {/* دکمه پایین */}
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-md border-t border-gray-100 z-100">
         <Button
           onClick={onConfirm}

@@ -12,7 +12,7 @@ import { Step3DateTime } from '@/components/pages/barber/step3';
 import { Step4Payment } from '@/components/pages/barber/step4';
 import { useBarber } from '@/services/features/barber/hooks';
 import {
-  useAvailableTimes,
+  useAvailableSlots,
   useCreateBooking,
 } from '@/services/features/booking/hooks';
 
@@ -39,8 +39,13 @@ export default function BookingWizard() {
     isLoading: barberLoading,
     error: barberError,
   } = useBarber(Number(id));
-  const { data: availableTimes = [], isLoading: timesLoading } =
-    useAvailableTimes(barber?.data?.id, selectedDate);
+
+  const { data: availableTimes, isLoading: timesLoading } = useAvailableSlots(
+    barber?.data?.id?.toString() || '',
+    selectedDate,
+    selectedServiceId, // ← اضافه شد
+  );
+
   const createBookingMutation = useCreateBooking();
 
   // Handlers
@@ -127,7 +132,7 @@ export default function BookingWizard() {
         <Step3DateTime
           selectedDate={selectedDate}
           selectedTime={selectedTime}
-          availableTimes={availableTimes}
+          availableTimes={availableTimes?.data} // ← آرایه
           timesLoading={timesLoading}
           onSelectDate={setSelectedDate}
           onSelectTime={setSelectedTime}

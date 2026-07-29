@@ -1,5 +1,6 @@
 import {
   CalendarDays,
+  Clock,
   Gem,
   LayoutDashboard,
   Scissors,
@@ -22,6 +23,11 @@ export const dashboardRoutes = [
     title: 'خدمات',
     href: '/dashboard/services',
     icon: Scissors,
+  },
+  {
+    title: 'ساعت کاری',
+    href: '/dashboard/work-hours',
+    icon: Clock,
   },
   {
     title: 'پروفایل',
