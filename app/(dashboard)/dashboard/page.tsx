@@ -1,45 +1,58 @@
+'use client';
+
 import { Calendar, DollarSign, Star, Users } from 'lucide-react';
 
 import StatCard from '@/components/dashboard/cards/stat-card';
 import DashboardShell from '@/components/dashboard/layout/dashboard-shell';
 import WelcomeCard from '@/components/dashboard/sections/welcome-section';
 import FadeIn from '@/components/shared/fade-in';
+import { useDashboardStats } from '@/services/features/dashboard/hooks';
 
 export default function DashboardPage() {
+  const { stats, balance, isLoading } = useDashboardStats();
+
   return (
     <DashboardShell>
       <FadeIn>
-        <WelcomeCard />
+        <WelcomeCard todayAppointments={stats.todayAppointments} />
       </FadeIn>
 
       <FadeIn delay={0.1}>
-        <div className="grid gap-2 lg:gap-4 grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2 lg:gap-4 xl:grid-cols-4">
           <StatCard
-            title="درآمد امروز"
-            value="۲,۵۰۰,۰۰۰"
+            title="موجودی کیف پول"
+            value={isLoading ? '...' : formatPrice(balance?.balance ?? 0)}
             icon={DollarSign}
             className="col-span-2 xl:col-span-1"
           />
+
           <StatCard
             title="نوبت امروز"
-            value="۱۲"
+            value={isLoading ? '...' : toPersianNumber(stats.todayAppointments)}
             icon={Calendar}
-            className="col-span-1 xl:col-span-1"
           />
+
           <StatCard
             title="امتیاز"
-            value="۴.۹"
+            value={stats.rating ? toPersianNumber(stats.rating) : '—'}
             icon={Star}
-            className="col-span-1 xl:col-span-1"
           />
+
           <StatCard
             title="مشتریان"
-            value="۳۵"
+            value={isLoading ? '...' : toPersianNumber(stats.customers)}
             icon={Users}
-            className="col-span-2 xl:col-span-1"
           />
         </div>
       </FadeIn>
     </DashboardShell>
   );
+}
+
+function toPersianNumber(value: number | string) {
+  return String(value).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[+d]);
+}
+
+function formatPrice(value: number) {
+  return `${new Intl.NumberFormat('fa-IR').format(value)} تومان`;
 }
