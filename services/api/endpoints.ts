@@ -34,7 +34,7 @@ export const endpoints = {
   },
 
   booking: {
-    create: '/booking',
+    create: '/bookings',
     availableTimes: '/bookings/available-slots',
   },
 

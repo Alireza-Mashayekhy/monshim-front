@@ -120,6 +120,11 @@ export default function ServicesPage() {
                       <Banknote size={12} /> {formatPrice(service.price)}
                     </span>
                   </div>
+                  {service.depositPrice && (
+                    <div className="text-xs text-amber-600 font-semibold">
+                      بیعانه: {formatPrice(service.depositPrice)}
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="flex gap-2">

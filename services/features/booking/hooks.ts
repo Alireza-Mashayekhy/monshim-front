@@ -20,14 +20,15 @@ export const useAvailableSlots = (
 ) => {
   return useQuery({
     queryKey: ['available-slots', barberId, date, serviceId],
-    queryFn: async () => {
-      const data = getAvailableSlots(barberId, date, serviceId);
-      return data;
-    },
+
+    queryFn: () => getAvailableSlots(barberId, date!, serviceId!),
+
     enabled: !!barberId && !!date && !!serviceId,
+
     staleTime: 2 * 60 * 1000,
   });
 };
+
 export const useCreateBooking = () => {
   const queryClient = useQueryClient();
   return useMutation({

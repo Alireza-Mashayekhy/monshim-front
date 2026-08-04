@@ -3,12 +3,11 @@ import { ArrowRight, Calendar, Clock } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { getNext7Days } from '@/lib/utils';
-import { WorkHours } from '@/services/features/barber/types';
 
 interface Step3DateTimeProps {
   selectedDate: string | null;
   selectedTime: string | null;
-  availableTimes: WorkHours[] | undefined;
+  availableTimes: string[];
   timesLoading: boolean;
   onSelectDate: (date: string) => void;
   onSelectTime: (time: string) => void;
@@ -94,21 +93,21 @@ export const Step3DateTime: React.FC<Step3DateTimeProps> = ({
               هیچ زمانی در این تاریخ آزاد نیست
             </div>
           ) : (
-            <div className="flex gap-3 overflow-x-auto no-scrollbar pb-4 px-1">
+            <div className="flex flex-wrap gap-3 overflow-x-auto no-scrollbar pb-4 px-1">
               {availableTimes?.map(time => (
                 <button
-                  key={time.id} // time یک رشته است و یکتا
-                  onClick={() => onSelectTime(time.id?.toString() || '')}
+                  key={time} // time یک رشته است و یکتا
+                  onClick={() => onSelectTime(time?.toString() || '')}
                   className={`min-w-[90px] p-4 rounded-2xl flex flex-col items-center justify-center border transition-all active:scale-95 ${
-                    selectedTime === time.id
+                    selectedTime === time
                       ? 'bg-gray-900 text-white border-gray-900 shadow-lg scale-105'
                       : 'bg-white text-gray-700 border-gray-200 hover:border-primary-500 hover:text-primary-600'
                   }`}
                 >
                   <span
-                    className={`font-bold text-lg dir-ltr ${selectedTime === time.id ? 'text-white' : 'text-gray-800'}`}
+                    className={`font-bold text-lg dir-ltr ${selectedTime === time ? 'text-white' : 'text-gray-800'}`}
                   >
-                    {time.startTime}
+                    {time}
                   </span>
                   <span className="text-[10px] text-gray-400">آزاد</span>
                 </button>

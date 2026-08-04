@@ -54,7 +54,7 @@ export function WithdrawModal({
     },
   });
 
-  const { reset, handleSubmit, watch } = methods;
+  const { reset, watch } = methods;
   const amountValue = watch('amount');
   const parsedAmount = parseFloat(amountValue?.replace(/,/g, '') || '0');
 

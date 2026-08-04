@@ -1,9 +1,9 @@
 // services/features/booking/api.ts
 import { api } from '@/services/api/client';
 import { endpoints } from '@/services/api/endpoints';
-import { ApiListResponse } from '@/services/api/types';
+import { ApiListResponse, ApiSingleResponse } from '@/services/api/types';
 
-import { WorkHours } from '../barber/types';
+import { AvailableSlotsResponse } from '../barber/types';
 import { Booking, BookingQueryParams } from './types';
 
 export interface CreateBookingDto {
@@ -26,7 +26,7 @@ export const getAvailableSlots = async (
   date: string | null,
   serviceId: string | null,
 ) => {
-  const { data } = await api.get<ApiListResponse<WorkHours>>(
+  const { data } = await api.get<ApiSingleResponse<AvailableSlotsResponse>>(
     endpoints.booking.availableTimes,
     {
       params: { barberId, date, serviceId },

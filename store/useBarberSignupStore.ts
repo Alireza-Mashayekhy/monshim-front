@@ -6,6 +6,7 @@ export interface ServiceInput {
   id: string;
   name: string;
   price: string;
+  depositPrice: string;
   duration: string;
 }
 

@@ -45,6 +45,7 @@ export default function BarbaerStep4({ onSubmit }: Step4Props) {
       id: Date.now().toString(),
       name: '',
       price: '',
+      depositPrice: '',
       duration: '30',
     };
     updateData({ services: [...services, newService] });
@@ -53,11 +54,45 @@ export default function BarbaerStep4({ onSubmit }: Step4Props) {
   // رفتن به مرحله بعد
   const handleNext = () => {
     // اعتبارسنجی: حداقل یک سرویس با نام و قیمت معتبر
-    const invalidServices = services.filter(
-      s => !s.name.trim() || !s.price.trim(),
-    );
+    const invalidServices = services.filter(service => {
+      // نام خدمت
+      if (!service.name.trim()) return true;
+
+      // مبلغ کل
+      if (!service.price.trim()) return true;
+
+      const price = Number(service.price);
+
+      if (isNaN(price) || price <= 0) return true;
+
+      // اگر بیعانه وارد شده اعتبارسنجی کن
+      if (service.depositPrice?.trim()) {
+        const deposit = Number(service.depositPrice);
+
+        if (isNaN(deposit) || deposit < 0) return true;
+
+        if (deposit > price) return true;
+      }
+
+      // مدت زمان
+      if (!service.duration) return true;
+
+      return false;
+    });
+
     if (invalidServices.length > 0) {
-      toast.error('لطفاً نام و قیمت همه خدمات را وارد کنید.');
+      const hasInvalidDeposit = invalidServices.some(
+        s => s.depositPrice?.trim() && Number(s.depositPrice) > Number(s.price),
+      );
+
+      if (hasInvalidDeposit) {
+        toast.error('مبلغ بیعانه نمی‌تواند بیشتر از مبلغ کل باشد.');
+      } else {
+        toast.error(
+          'لطفاً نام، مبلغ کل و مدت زمان همه خدمات را به درستی وارد کنید.',
+        );
+      }
+
       return;
     }
     if (services.length === 0) {
@@ -115,13 +150,24 @@ export default function BarbaerStep4({ onSubmit }: Step4Props) {
                 />
               </div>
               <input
-                placeholder="قیمت (تومان)"
+                placeholder="مبلغ کل (تومان)"
                 type="text"
                 inputMode="numeric"
                 className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:bg-white focus:border-primary-500 outline-none transition-colors dir-ltr text-right"
                 value={service.price}
                 onChange={e =>
                   updateService(service.id, 'price', e.target.value)
+                }
+              />
+
+              <input
+                placeholder="بیعانه (اختیاری)"
+                type="text"
+                inputMode="numeric"
+                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:bg-white focus:border-primary-500 outline-none transition-colors dir-ltr text-right"
+                value={service.depositPrice}
+                onChange={e =>
+                  updateService(service.id, 'depositPrice', e.target.value)
                 }
               />
               <select

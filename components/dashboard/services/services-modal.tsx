@@ -32,6 +32,7 @@ interface ServiceModalProps {
 const schema = z.object({
   name: z.string().min(1, 'نام خدمت الزامی است'),
   price: z.string().min(1, 'قیمت الزامی است'),
+  depositPrice: z.string().optional(),
   duration: z.string().min(1, 'مدت زمان الزامی است'),
 });
 
@@ -59,6 +60,7 @@ export function ServiceModal({
     defaultValues: {
       name: '',
       price: '',
+      depositPrice: '',
       duration: '30',
     },
   });
@@ -69,19 +71,40 @@ export function ServiceModal({
     if (editingService) {
       reset({
         name: editingService.name,
-        price: editingService.price,
-        duration: editingService.durationMinutes.toString(),
+        price: editingService.price?.toString() ?? '',
+        depositPrice: editingService.depositPrice?.toString() ?? '',
+        duration: editingService.durationMinutes?.toString() ?? '30',
       });
     } else {
-      reset({ name: '', price: '', duration: '30' });
+      reset({
+        name: '',
+        price: '',
+        depositPrice: '',
+        duration: '30',
+      });
     }
   }, [editingService, reset, open]);
 
   const onSubmit = (data: FormData) => {
     const price = unformatNumberInput(data.price);
+
+    const depositPrice = data.depositPrice
+      ? unformatNumberInput(data.depositPrice)
+      : null;
+
+    if (depositPrice !== null && depositPrice > price) {
+      methods.setError('depositPrice', {
+        type: 'manual',
+        message: 'بیعانه نمی‌تواند بیشتر از مبلغ کل باشد.',
+      });
+
+      return;
+    }
+
     const dto = {
       name: data.name,
       price,
+      depositPrice,
       durationMinutes: parseInt(data.duration),
       isActive: true,
     };
@@ -123,7 +146,15 @@ export function ServiceModal({
           />
           <RHFNumberInput
             name="price"
-            label="قیمت (تومان)"
+            label="مبلغ کل (تومان)"
+            outputType="string"
+            placeholder="مثلاً ۱۵۰۰۰۰"
+            allowDecimal={false}
+            max={9999999999}
+          />
+          <RHFNumberInput
+            name="depositPrice"
+            label="بیعانه (اختیاری)"
             outputType="string"
             placeholder="مثلاً ۱۵۰۰۰۰"
             allowDecimal={false}

@@ -76,7 +76,7 @@ export default function BookingWizard() {
         note: '',
       });
       toast.success('رزرو با موفقیت انجام شد!');
-      router.push('/dashboard');
+      router.push('/appointments');
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'خطا در ثبت رزرو');
     }
@@ -132,7 +132,7 @@ export default function BookingWizard() {
         <Step3DateTime
           selectedDate={selectedDate}
           selectedTime={selectedTime}
-          availableTimes={availableTimes?.data} // ← آرایه
+          availableTimes={availableTimes?.data?.slots || []} // ← آرایه
           timesLoading={timesLoading}
           onSelectDate={setSelectedDate}
           onSelectTime={setSelectedTime}

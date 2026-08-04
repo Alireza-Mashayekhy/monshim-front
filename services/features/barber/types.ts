@@ -12,6 +12,7 @@ export interface Service {
   id: string;
   name: string;
   price: number;
+  depositePrice?: number | null;
   durationMinutes: number;
 }
 
@@ -87,4 +88,8 @@ export interface WorkHours {
   dayOfWeek: number; // 0=شنبه ... 6=جمعه
   startTime: string; // HH:mm
   endTime: string; // HH:mm
+}
+
+export interface AvailableSlotsResponse {
+  slots: string[];
 }

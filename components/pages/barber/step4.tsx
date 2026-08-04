@@ -1,6 +1,7 @@
 // components/booking/Step4Payment.tsx
-import { ArrowRight, CheckCircle, CreditCard, Wallet } from 'lucide-react';
+import { ArrowRight, CheckCircle, CreditCard } from 'lucide-react';
 
+import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/lib/utils';
 import {
   Barber,
@@ -115,7 +116,7 @@ export const Step4Payment: React.FC<Step4PaymentProps> = ({
             )}
           </label>
 
-          <label
+          {/* <label
             className={`flex items-center gap-4 p-4 rounded-2xl border cursor-pointer transition-all ${
               paymentMethod === 'WALLET'
                 ? 'bg-white border-primary-600 ring-1 ring-primary-600'
@@ -138,20 +139,21 @@ export const Step4Payment: React.FC<Step4PaymentProps> = ({
             {paymentMethod === 'WALLET' && (
               <CheckCircle size={20} className="text-primary-600" />
             )}
-          </label>
+          </label> */}
         </div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/95 backdrop-blur-md border-t border-gray-100 z-40 shadow-lg">
-        <button
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-md border-t border-gray-100 z-100">
+        <Button
           onClick={onPay}
           disabled={isSubmitting}
-          className="w-full py-4 rounded-2xl font-bold text-lg shadow-xl bg-green-600 text-white hover:bg-green-700 flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
+          className="w-full"
+          size="lg"
         >
           {isSubmitting
             ? 'در حال پردازش...'
-            : `پرداخت ${formatPrice(service.price)} تومان`}
-        </button>
+            : `پرداخت ${formatPrice(service.price)} تومان`}{' '}
+        </Button>
       </div>
     </div>
   );

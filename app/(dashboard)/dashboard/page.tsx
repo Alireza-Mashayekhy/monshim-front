@@ -21,7 +21,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 gap-2 lg:gap-4 xl:grid-cols-4">
           <StatCard
             title="موجودی کیف پول"
-            value={isLoading ? '...' : formatPrice(balance?.balance ?? 0)}
+            value={isLoading ? '...' : formatPrice(balance?.data?.balance ?? 0)}
             icon={DollarSign}
             className="col-span-2 xl:col-span-1"
           />

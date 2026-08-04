@@ -64,9 +64,21 @@ export const Step2Services: React.FC<Step2ServicesProps> = ({
                   </span>
                 </div>
               </div>
-              <div className="font-bold text-sm relative z-10">
-                {formatPrice(service.price)} تومان
-              </div>
+              {!service.depositePrice && (
+                <div className="font-bold text-sm relative z-10">
+                  {formatPrice(service.price)} تومان
+                </div>
+              )}
+              {service.depositePrice && (
+                <div className="flex flex-col gap-1">
+                  <div className="font-bold text-xs relative z-10 text-gray-400">
+                    مبلغ کل: {formatPrice(service.price)} تومان
+                  </div>
+                  <div className="font-bold text-sm relative z-10">
+                    بیعانه: {formatPrice(service.depositePrice)} تومان
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>
