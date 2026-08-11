@@ -51,7 +51,7 @@ export async function proxy(request: NextRequest) {
       const allowedRoles = ['admin', 'editor'];
       const hasAccess = roleArray.some(role => allowedRoles.includes(role));
       if (!hasAccess) {
-        return NextResponse.redirect(new URL('/panel', request.url));
+        return NextResponse.redirect(new URL('/home', request.url));
       }
     }
 

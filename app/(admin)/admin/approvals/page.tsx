@@ -3,6 +3,7 @@
 import { MoreHorizontalIcon } from 'lucide-react';
 import { useState } from 'react';
 
+import { BarberReviewDialog } from '@/components/admin/barbers/review-dialog';
 import CustomPagination from '@/components/shared/custom-pagination';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,16 +23,18 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useDebounce } from '@/hooks/use-debounce';
-import { useUsersList } from '@/services/features/users/hooks';
-import { UserResponse } from '@/services/features/users/types';
+import { useBarberList } from '@/services/features/barber/admin.hooks';
+import { BarberResponse } from '@/services/features/barber/types';
 
 export default function Users() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
+  const [selectedBarberId, setSelectedBarberId] = useState<string | null>(null);
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
 
   const debouncedSearch = useDebounce(search, 500);
 
-  const { data } = useUsersList({
+  const { data } = useBarberList({
     page,
     search: debouncedSearch,
   });
@@ -57,20 +60,16 @@ export default function Users() {
             <TableRow>
               <TableHead className="w-10">آیدی</TableHead>
               <TableHead>نام و نام خانوادگی</TableHead>
-              <TableHead>شماره تلفن</TableHead>
-              <TableHead>تاریخ تولد</TableHead>
-              <TableHead>نقش</TableHead>
+              <TableHead>نام سالن</TableHead>
               <TableHead>عملیات</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data?.data.map((user: UserResponse) => (
-              <TableRow key={user.id}>
-                <TableCell className="text-center">{user.id}</TableCell>
-                <TableCell>{user.fullName}</TableCell>
-                <TableCell>{user.phone}</TableCell>
-                <TableCell>{user.birthDate}</TableCell>
-                <TableCell>{user.roles.join(' - ')}</TableCell>
+            {data?.data?.map((barber: BarberResponse) => (
+              <TableRow key={barber.id}>
+                <TableCell className="text-center">{barber.id}</TableCell>
+                <TableCell>{barber.fullName}</TableCell>
+                <TableCell>{barber.salonName}</TableCell>
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -80,7 +79,14 @@ export default function Users() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      {/* <DropdownMenuItem>ویرایش</DropdownMenuItem> */}
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setSelectedBarberId(barber.id);
+                          setReviewDialogOpen(true);
+                        }}
+                      >
+                        بررسی پروفایل
+                      </DropdownMenuItem>{' '}
                       <DropdownMenuItem variant="destructive">
                         حذف
                       </DropdownMenuItem>
@@ -102,6 +108,17 @@ export default function Users() {
             </TableRow>
           </TableFooter>
         </Table>
+        <BarberReviewDialog
+          barberId={selectedBarberId}
+          open={reviewDialogOpen}
+          onOpenChange={open => {
+            setReviewDialogOpen(open);
+
+            if (!open) {
+              setSelectedBarberId(null);
+            }
+          }}
+        />
       </div>
     </div>
   );

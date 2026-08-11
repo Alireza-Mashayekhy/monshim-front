@@ -1,6 +1,6 @@
 'use client';
 
-import { Boxes, Grid2X2, User } from 'lucide-react';
+import { Calendar, Check, Settings, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -26,14 +26,19 @@ const items = [
     name: 'کاربران',
   },
   {
-    link: '/admin/categories',
-    icon: Grid2X2,
-    name: 'دسته‌بندی‌‌ها',
+    link: '/admin/wallet',
+    icon: Calendar,
+    name: 'تراکنش ها',
   },
   {
-    link: '/admin/products',
-    icon: Boxes,
-    name: 'محصولات',
+    link: '/admin/approvals',
+    icon: Check,
+    name: 'تایید آرایشگر',
+  },
+  {
+    link: '/admin/settings',
+    icon: Settings,
+    name: 'تنظیمات',
   },
 ];
 
@@ -49,7 +54,7 @@ export default function AdminSidebar() {
       bgClassName="bg-white border-l border-sidebar-border"
     >
       <SidebarHeader className="flex flex-row items-center justify-end">
-        {state !== 'collapsed' && <span className="ml-auto">Zoppini</span>}
+        {state !== 'collapsed' && <span className="ml-auto">Monshim</span>}
         <SidebarTrigger />
       </SidebarHeader>
 

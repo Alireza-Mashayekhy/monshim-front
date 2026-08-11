@@ -31,6 +31,13 @@ export const endpoints = {
     updateProfileImage: '/barber/profile/image',
     workHours: '/barber/profile/work-hours',
     updateWorkHours: '/barber/profile/work-hours',
+    admin: {
+      list: '/admin/barber',
+      detail: (id: string) => `/admin/barber/${id}`,
+      update: '/admin/barber',
+      remove: '/admin/barber',
+      review: (id: string) => `/admin/barber/${id}/review`,
+    },
   },
 
   booking: {

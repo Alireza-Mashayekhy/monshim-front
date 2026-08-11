@@ -1,10 +1,12 @@
+import { CityResponse, ProvinceResponse } from '../locations/types';
+
 export interface BarberResponse {
   id: string;
   barberProfile: BarberProfile;
   cityName: string;
   provinceName: string;
   fullName: string;
-  profileImage: string;
+  profileImage: string | null;
   salonName: string;
 }
 
@@ -41,6 +43,8 @@ export interface BarberProfile {
   cityId?: number | null;
   provinceName?: string | null;
   cityName?: string | null;
+  city: CityResponse;
+  province: ProvinceResponse;
   address: string;
   bio?: string | null;
   profileImage?: string | null;
@@ -92,4 +96,9 @@ export interface WorkHours {
 
 export interface AvailableSlotsResponse {
   slots: string[];
+}
+
+export interface ReviewBarberDto {
+  isApproved: boolean;
+  rejectionReason?: string | null;
 }
