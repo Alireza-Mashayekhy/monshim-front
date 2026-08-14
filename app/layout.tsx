@@ -23,10 +23,10 @@ export default async function RootLayout({
 
   try {
     const response = await getMe();
-
     user = response.data;
-  } catch {}
-
+  } catch (error) {
+    console.error('GET ME ERROR:', error);
+  }
   return (
     <html
       lang="fa"

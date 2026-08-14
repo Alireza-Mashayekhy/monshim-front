@@ -7,7 +7,7 @@ import { useAuthStore } from '@/store/auth.store';
 
 type Props = {
   children: React.ReactNode;
-  initialUser: UserResponse | UserResponse[] | null;
+  initialUser: UserResponse | null;
 };
 
 export default function AuthProvider({ children, initialUser }: Props) {
