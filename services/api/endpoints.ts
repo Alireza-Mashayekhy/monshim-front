@@ -52,4 +52,19 @@ export const endpoints = {
     edit: (id: number) => `/services/${id}`,
     delete: (id: number) => `/services/${id}`,
   },
+
+  subscription: {
+    list: '/admin/subscriptions',
+    active: '/admin/subscriptions/active',
+    create: '/admin/subscriptions',
+    detail: (id: string) => `/admin/subscriptions/${id}`,
+    update: (id: string) => `/admin/subscriptions/${id}`,
+    delete: (id: string) => `/admin/subscriptions/${id}`,
+    toggleActive: (id: string) => `/admin/subscriptions/${id}/toggle-active`,
+  },
+
+  settings: {
+    get: '/admin/settings',
+    update: '/admin/settings',
+  },
 };
