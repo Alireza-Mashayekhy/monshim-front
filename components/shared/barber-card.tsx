@@ -12,12 +12,18 @@ export default function BarberCard({ barber }: { barber: BarberResponse }) {
       className="bg-white border w-full border-gray-100 p-2 rounded-2xl shadow-sm flex flex-col gap-2 cursor-pointer active:scale-[0.98] transition-transform"
     >
       <div className="relative aspect-square">
-        <Image
-          fill
-          src={process.env.NEXT_PUBLIC_IMAGE_URL + barber?.profileImage}
-          alt={barber?.salonName}
-          className="w-full h-full rounded-xl object-cover bg-gray-200"
-        />
+        {barber?.profileImage ? (
+          <Image
+            fill
+            src={process.env.NEXT_PUBLIC_IMAGE_URL + barber?.profileImage}
+            alt={barber?.salonName}
+            className="w-full h-full rounded-xl object-cover bg-gray-200"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-gray-400">
+            بدون تصویر
+          </div>
+        )}
       </div>
       <div className="px-1">
         <h4 className="font-bold text-gray-800 text-xs truncate">

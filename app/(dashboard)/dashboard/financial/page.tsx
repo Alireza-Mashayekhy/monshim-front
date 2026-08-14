@@ -30,7 +30,7 @@ export default function FinancialPage() {
   const { data: transactionsData, isLoading: transactionsLoading } =
     useTransactions(1, 10);
 
-  const balance = balanceData?.balance || 0;
+  const balance = balanceData?.data?.balance || 0;
 
   if (balanceError) {
     return (
@@ -91,7 +91,7 @@ export default function FinancialPage() {
                 <Skeleton key={i} className="h-16 w-full rounded-2xl" />
               ))}
             </>
-          ) : transactionsData?.data?.length > 0 ? (
+          ) : transactionsData?.data && transactionsData?.data?.length > 0 ? (
             transactionsData.data.slice(0, 10).map(t => (
               <AppCard key={t.id} className="flex justify-between items-center">
                 <div>
