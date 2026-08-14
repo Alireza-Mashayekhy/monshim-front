@@ -3,21 +3,36 @@ import { toast } from 'sonner';
 
 import {
   createSubscriptionPlan,
+  createUserSubscription,
   deleteSubscriptionPlan,
+  getActiveSubscriptionPlans,
+  getCurrentUserSubscription,
   getSubscriptionPlans,
+  getUserSubscriptions,
   toggleSubscriptionPlan,
   updateSubscriptionPlan,
 } from './api';
 import { CreateSubscriptionPlanDto, UpdateSubscriptionPlanDto } from './types';
 
 export const subscriptionKeys = {
-  all: ['adminSubscriptions'] as const,
-  list: () => [...subscriptionKeys.all, 'list'] as const,
+  all: ['subscriptions'] as const,
+
+  admin: () => [...subscriptionKeys.all, 'admin'] as const,
+  adminList: () => [...subscriptionKeys.admin(), 'list'] as const,
+  activePlans: () => [...subscriptionKeys.all, 'active-plans'] as const,
+
+  user: () => [...subscriptionKeys.all, 'user'] as const,
+  current: () => [...subscriptionKeys.user(), 'current'] as const,
+  history: () => [...subscriptionKeys.user(), 'history'] as const,
 };
+
+// =========================
+// ADMIN
+// =========================
 
 export function useSubscriptionPlans() {
   return useQuery({
-    queryKey: subscriptionKeys.list(),
+    queryKey: subscriptionKeys.adminList(),
     queryFn: getSubscriptionPlans,
     staleTime: 2 * 60 * 1000,
   });
@@ -100,6 +115,54 @@ export function useToggleSubscriptionPlan() {
 
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'خطا در تغییر وضعیت پلن');
+    },
+  });
+}
+
+// =========================
+// USER
+// =========================
+
+export function useActiveSubscriptionPlans() {
+  return useQuery({
+    queryKey: subscriptionKeys.activePlans(),
+    queryFn: getActiveSubscriptionPlans,
+    staleTime: 2 * 60 * 1000,
+  });
+}
+
+export function useCurrentUserSubscription() {
+  return useQuery({
+    queryKey: subscriptionKeys.current(),
+    queryFn: getCurrentUserSubscription,
+    staleTime: 60 * 1000,
+  });
+}
+
+export function useUserSubscriptions() {
+  return useQuery({
+    queryKey: subscriptionKeys.history(),
+    queryFn: getUserSubscriptions,
+    staleTime: 2 * 60 * 1000,
+  });
+}
+
+export function useCreateUserSubscription() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createUserSubscription,
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: subscriptionKeys.user(),
+      });
+
+      toast.success('اشتراک با موفقیت فعال شد');
+    },
+
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'خطا در فعال‌سازی اشتراک');
     },
   });
 }

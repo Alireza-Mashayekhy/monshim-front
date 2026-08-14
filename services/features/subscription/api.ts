@@ -6,8 +6,10 @@ import {
   CreateSubscriptionPlanDto,
   SubscriptionPlan,
   UpdateSubscriptionPlanDto,
+  UserSubscription,
 } from './types';
 
+// Admin
 export async function getSubscriptionPlans() {
   const { data } = await api.get<ApiListResponse<SubscriptionPlan>>(
     endpoints.subscription.list,
@@ -18,7 +20,7 @@ export async function getSubscriptionPlans() {
 
 export async function getActiveSubscriptionPlans() {
   const { data } = await api.get<ApiListResponse<SubscriptionPlan>>(
-    endpoints.subscription.active,
+    endpoints.userSubscription.active,
   );
 
   return data;
@@ -62,6 +64,35 @@ export async function deleteSubscriptionPlan(id: string) {
 export async function toggleSubscriptionPlan(id: string) {
   const { data } = await api.patch<ApiSingleResponse<SubscriptionPlan>>(
     endpoints.subscription.toggleActive(id),
+  );
+
+  return data;
+}
+
+// User Subscription
+
+export async function getCurrentUserSubscription() {
+  const { data } = await api.get<ApiSingleResponse<UserSubscription | null>>(
+    endpoints.userSubscription.current,
+  );
+
+  return data;
+}
+
+export async function getUserSubscriptions() {
+  const { data } = await api.get<ApiListResponse<UserSubscription>>(
+    endpoints.userSubscription.list,
+  );
+
+  return data;
+}
+
+export async function createUserSubscription(subscriptionPlanId: string) {
+  const { data } = await api.post<ApiSingleResponse<UserSubscription>>(
+    endpoints.userSubscription.create,
+    {
+      subscriptionPlanId,
+    },
   );
 
   return data;

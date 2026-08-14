@@ -21,3 +21,18 @@ export interface CreateSubscriptionPlanDto {
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface UpdateSubscriptionPlanDto extends Partial<CreateSubscriptionPlanDto> {}
+
+export type UserSubscriptionStatus = 'ACTIVE' | 'EXPIRED';
+
+export interface UserSubscription {
+  id: string;
+  userId: number;
+  subscriptionPlanId: string;
+  price: number;
+  status: UserSubscriptionStatus;
+  startDate: string;
+  endDate: string;
+  createdAt: string;
+  updatedAt: string;
+  subscriptionPlan: SubscriptionPlan;
+}
