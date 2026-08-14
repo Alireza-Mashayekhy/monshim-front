@@ -1,7 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 
+import FormProvider from '@/components/form/form-provider';
+import RHFInput from '@/components/form/rhf-input';
+import RHFNumberInput from '@/components/form/rhf-number-input';
+import RHFSelect from '@/components/form/rhf-select';
+import RHFSwitch from '@/components/form/rhf-switch';
+import RHFTextArea from '@/components/form/rhf-textarea';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -9,10 +16,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
 import {
   useCreateSubscriptionPlan,
   useUpdateSubscriptionPlan,
@@ -25,6 +28,30 @@ interface SubscriptionDialogProps {
   subscription?: SubscriptionPlan | null;
 }
 
+type FormValues = {
+  name: string;
+  price: number;
+  durationDays: string;
+  description: string;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+const durationOptions = [
+  {
+    value: '30',
+    text: '۱ ماهه',
+  },
+  {
+    value: '90',
+    text: '۳ ماهه',
+  },
+  {
+    value: '365',
+    text: 'سالانه',
+  },
+];
+
 export default function SubscriptionDialog({
   open,
   onOpenChange,
@@ -35,41 +62,53 @@ export default function SubscriptionDialog({
   const createMutation = useCreateSubscriptionPlan();
   const updateMutation = useUpdateSubscriptionPlan();
 
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState('');
-  const [durationDays, setDurationDays] = useState('');
-  const [description, setDescription] = useState('');
-  const [sortOrder, setSortOrder] = useState('0');
-  const [isActive, setIsActive] = useState(true);
+  const methods = useForm<FormValues>({
+    defaultValues: {
+      name: '',
+      price: 0,
+      durationDays: '30',
+      description: '',
+      sortOrder: 0,
+      isActive: true,
+    },
+  });
+
+  const { reset, watch, setValue } = methods;
+
+  const isActive = watch('isActive');
 
   useEffect(() => {
+    if (!open) return;
+
     if (subscription) {
-      setName(subscription.name);
-      setPrice(String(subscription.price));
-      setDurationDays(String(subscription.durationDays));
-      setDescription(subscription.description ?? '');
-      setSortOrder(String(subscription.sortOrder));
-      setIsActive(subscription.isActive);
+      reset({
+        name: subscription.name,
+        price: Number(subscription.price),
+        durationDays: String(subscription.durationDays),
+        description: subscription.description ?? '',
+        sortOrder: subscription.sortOrder,
+        isActive: subscription.isActive,
+      });
     } else {
-      setName('');
-      setPrice('');
-      setDurationDays('');
-      setDescription('');
-      setSortOrder('0');
-      setIsActive(true);
+      reset({
+        name: '',
+        price: 0,
+        durationDays: '30',
+        description: '',
+        sortOrder: 0,
+        isActive: true,
+      });
     }
-  }, [subscription, open]);
+  }, [subscription, open, reset]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
+  const onSubmit = (values: FormValues) => {
     const dto = {
-      name: name.trim(),
-      price: Number(price),
-      durationDays: Number(durationDays),
-      description: description.trim() || null,
-      sortOrder: Number(sortOrder),
-      isActive,
+      name: values.name.trim(),
+      price: Number(values.price),
+      durationDays: Number(values.durationDays),
+      description: values.description.trim() || null,
+      sortOrder: Number(values.sortOrder),
+      isActive: values.isActive,
     };
 
     if (isEdit) {
@@ -84,13 +123,15 @@ export default function SubscriptionDialog({
           },
         },
       );
-    } else {
-      createMutation.mutate(dto, {
-        onSuccess: () => {
-          onOpenChange(false);
-        },
-      });
+
+      return;
     }
+
+    createMutation.mutate(dto, {
+      onSuccess: () => {
+        onOpenChange(false);
+      },
+    });
   };
 
   const isPending = createMutation.isPending || updateMutation.isPending;
@@ -104,74 +145,54 @@ export default function SubscriptionDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="space-y-2">
-            <Label>نام اشتراک</Label>
+        <FormProvider
+          methods={methods}
+          onSubmit={onSubmit}
+          className="space-y-5 max-h-[80vh] overflow-auto scrollbar-thin!"
+        >
+          <RHFInput
+            name="name"
+            label="نام اشتراک"
+            placeholder="مثلاً اشتراک طلایی"
+            isRequired
+          />
 
-            <Input
-              value={name}
-              onChange={e => setName(e.target.value)}
-              placeholder="مثلاً اشتراک طلایی"
-              required
+          <div className="grid grid-cols-2 gap-4">
+            <RHFNumberInput
+              name="price"
+              label="قیمت"
+              placeholder="مثلاً 500,000"
+              min={0}
+              isRequired
+            />
+
+            <RHFSelect
+              name="durationDays"
+              label="مدت اشتراک"
+              placeholder="انتخاب مدت"
+              items={durationOptions}
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>قیمت</Label>
+          <RHFTextArea
+            name="description"
+            label="توضیحات"
+            placeholder="توضیحات مربوط به اشتراک..."
+          />
 
-              <Input
-                type="number"
-                min={0}
-                value={price}
-                onChange={e => setPrice(e.target.value)}
-                placeholder="مثلاً 500000"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label>مدت اشتراک (روز)</Label>
-
-              <Input
-                type="number"
-                min={1}
-                value={durationDays}
-                onChange={e => setDurationDays(e.target.value)}
-                placeholder="30"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label>توضیحات</Label>
-
-            <Textarea
-              value={description}
-              onChange={e => setDescription(e.target.value)}
-              placeholder="توضیحات مربوط به اشتراک..."
-              rows={4}
+          <div className="grid grid-cols-2 gap-4 items-end">
+            <RHFNumberInput
+              name="sortOrder"
+              label="ترتیب نمایش"
+              min={0}
+              placeholder="0"
             />
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>ترتیب نمایش</Label>
-
-              <Input
-                type="number"
-                min={0}
-                value={sortOrder}
-                onChange={e => setSortOrder(e.target.value)}
-              />
-            </div>
-
-            <div className="flex items-center justify-between rounded-lg border p-3 mt-6">
-              <Label>فعال</Label>
-
-              <Switch checked={isActive} onCheckedChange={setIsActive} />
-            </div>
+            <RHFSwitch
+              name="isActive"
+              label="فعال"
+              className="cursor-pointer mb-2"
+            />
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
@@ -179,6 +200,7 @@ export default function SubscriptionDialog({
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
+              disabled={isPending}
             >
               انصراف
             </Button>
@@ -191,7 +213,7 @@ export default function SubscriptionDialog({
                   : 'ایجاد اشتراک'}
             </Button>
           </div>
-        </form>
+        </FormProvider>
       </DialogContent>
     </Dialog>
   );
