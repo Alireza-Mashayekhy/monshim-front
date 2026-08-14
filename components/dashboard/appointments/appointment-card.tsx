@@ -7,12 +7,8 @@ import AppCard from '@/components/shared/app-card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { formatPrice } from '@/lib/utils';
-import {
-  useCancelBooking,
-  useConfirmBooking,
-  useUpdateBookingStatus,
-} from '@/services/features/booking/hooks';
-import { Booking } from '@/services/features/booking/types';
+import { useUpdateBookingStatus } from '@/services/features/booking/hooks';
+import { Booking, BookingStatus } from '@/services/features/booking/types';
 
 interface AppointmentCardProps {
   booking: Booking;
@@ -21,26 +17,22 @@ interface AppointmentCardProps {
 export default function AppointmentCard({ booking }: AppointmentCardProps) {
   const { id, customer, service, date, time, price, status } = booking;
   const updateStatus = useUpdateBookingStatus();
-  const confirmBooking = useConfirmBooking();
-  const cancelBooking = useCancelBooking();
 
-  const statusVariant =
-    {
-      PENDING: 'bg-yellow-100 text-yellow-700',
-      CONFIRMED: 'bg-green-100 text-green-700',
-      COMPLETED: 'bg-blue-100 text-blue-700',
-      CANCELLED: 'bg-red-100 text-red-700',
-      REJECTED: 'bg-gray-100 text-gray-700',
-    }[status] || 'bg-gray-100 text-gray-700';
+  const statusVariant: Record<BookingStatus, string> = {
+    pending: 'bg-yellow-100 text-yellow-700',
+    confirmed: 'bg-green-100 text-green-700',
+    completed: 'bg-blue-100 text-blue-700',
+    canceled: 'bg-red-100 text-red-700',
+    rejected: 'bg-gray-100 text-gray-700',
+  };
 
-  const statusLabel =
-    {
-      PENDING: 'در انتظار',
-      CONFIRMED: 'تایید شده',
-      COMPLETED: 'انجام شده',
-      CANCELLED: 'لغو شده',
-      REJECTED: 'رد شده',
-    }[status] || status;
+  const statusLabel: Record<BookingStatus, string> = {
+    pending: 'در انتظار تایید',
+    confirmed: 'تایید شده',
+    completed: 'انجام شده',
+    canceled: 'لغو شده',
+    rejected: 'رد شده',
+  };
 
   const handleCall = () => {
     if (customer?.phone) window.location.href = `tel:${customer.phone}`;
@@ -54,8 +46,8 @@ export default function AppointmentCard({ booking }: AppointmentCardProps) {
     <AppCard>
       <div className="flex justify-between items-start">
         <div>
-          <Badge className={`rounded-full ${statusVariant}`}>
-            {statusLabel}
+          <Badge className={`rounded-full ${statusVariant[status]}`}>
+            {statusLabel[status]}
           </Badge>
           <h3 className="mt-4 text-xl font-bold">
             {customer?.fullName || 'مشتری'}
@@ -88,21 +80,34 @@ export default function AppointmentCard({ booking }: AppointmentCardProps) {
             <MessageCircle size={18} />
           </Button>
 
-          {status === 'PENDING' && (
+          {status === 'pending' && (
             <>
+              {/* تایید */}
               <Button
                 size="icon"
                 className="rounded-full"
-                onClick={() => confirmBooking.mutate(id)}
-                disabled={confirmBooking.isPending}
+                onClick={() =>
+                  updateStatus.mutate({
+                    id,
+                    status: 'confirmed',
+                  })
+                }
+                disabled={updateStatus.isPending}
               >
                 <Check size={18} />
               </Button>
+
+              {/* رد */}
               <Button
                 size="icon"
-                className="rounded-full"
                 variant="destructive"
-                onClick={() => updateStatus.mutate({ id, status: 'REJECTED' })}
+                className="rounded-full"
+                onClick={() =>
+                  updateStatus.mutate({
+                    id,
+                    status: 'rejected',
+                  })
+                }
                 disabled={updateStatus.isPending}
               >
                 <XCircle size={18} />
@@ -110,28 +115,40 @@ export default function AppointmentCard({ booking }: AppointmentCardProps) {
             </>
           )}
 
-          {status === 'CONFIRMED' && (
-            <Button
-              size="icon"
-              className="rounded-full"
-              variant="outline"
-              onClick={() => updateStatus.mutate({ id, status: 'COMPLETED' })}
-              disabled={updateStatus.isPending}
-            >
-              <Check size={18} />
-            </Button>
-          )}
+          {status === 'confirmed' && (
+            <>
+              {/* انجام شد */}
+              <Button
+                size="icon"
+                className="rounded-full"
+                variant="outline"
+                onClick={() =>
+                  updateStatus.mutate({
+                    id,
+                    status: 'completed',
+                  })
+                }
+                disabled={updateStatus.isPending}
+              >
+                <Check size={18} />
+              </Button>
 
-          {(status === 'PENDING' || status === 'CONFIRMED') && (
-            <Button
-              size="icon"
-              className="rounded-full"
-              variant="destructive"
-              onClick={() => updateStatus.mutate({ id, status: 'CANCELLED' })}
-              disabled={updateStatus.isPending}
-            >
-              <XCircle size={18} />
-            </Button>
+              {/* لغو */}
+              <Button
+                size="icon"
+                className="rounded-full"
+                variant="destructive"
+                onClick={() =>
+                  updateStatus.mutate({
+                    id,
+                    status: 'canceled',
+                  })
+                }
+                disabled={updateStatus.isPending}
+              >
+                <XCircle size={18} />
+              </Button>
+            </>
           )}
         </div>
       </div>

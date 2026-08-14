@@ -1,4 +1,11 @@
 // types/booking.types.ts
+export type BookingStatus =
+  | 'pending'
+  | 'confirmed'
+  | 'completed'
+  | 'canceled'
+  | 'rejected';
+
 export interface Booking {
   id: string;
   customerId: number;
@@ -7,7 +14,7 @@ export interface Booking {
   date: string; // YYYY-MM-DD
   time: string; // HH:mm
   price: number;
-  status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'REJECTED';
+  status: BookingStatus;
   note?: string;
   createdAt: string;
   updatedAt: string;
