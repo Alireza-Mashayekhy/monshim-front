@@ -4,6 +4,7 @@ export const endpoints = {
     otp: '/auth/send-otp',
     registerBarber: '/auth/register-barber',
     me: '/auth/me',
+    logout: '/auth/logout',
   },
 
   users: {

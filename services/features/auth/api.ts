@@ -34,3 +34,9 @@ export async function fetchMe() {
   const { data } = await api.get(endpoints.auth.me);
   return data;
 }
+
+export async function logout() {
+  const { data } = await api.post(endpoints.auth.logout);
+
+  return data;
+}

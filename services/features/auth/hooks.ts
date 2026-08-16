@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 
-import { fetchMe, login, registerBarber, sendOtp } from './api';
+import { fetchMe, login, logout, registerBarber, sendOtp } from './api';
 
 export function useLogin() {
   return useMutation({
@@ -27,3 +27,9 @@ export const useMe = () => {
     staleTime: 5 * 60 * 1000, // 5 دقیقه کش
   });
 };
+
+export function useLogout() {
+  return useMutation({
+    mutationFn: logout,
+  });
+}
