@@ -27,6 +27,7 @@ interface BarberSignupState {
   portfolio: string[];
   services: ServiceInput[];
   referralCode: string; // کد معرف آرایشگر دعوت کننده
+  birthDate: string; // تاریخ تولد (شمسی YYYY/MM/DD)
 
   setStep: (step: number) => void;
   nextStep: () => void;
@@ -59,6 +60,7 @@ const initialState = {
   portfolio: [],
   services: [],
   referralCode: '',
+  birthDate: '',
 };
 
 export const useBarberSignupStore = create<BarberSignupState>()(

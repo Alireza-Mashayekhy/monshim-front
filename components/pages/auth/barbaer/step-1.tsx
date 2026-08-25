@@ -8,6 +8,7 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
 import FormProvider from '@/components/form/form-provider';
+import { PersianDatePicker } from '@/components/form/persian-date-picker';
 import { RHFImageUploader } from '@/components/form/rhf-image-uploader';
 import RHFInput from '@/components/form/rhf-input';
 import { Button } from '@/components/ui/button';
@@ -18,7 +19,7 @@ interface Step1Props {
 }
 
 export default function BarbaerStep1({ onSubmit }: Step1Props) {
-  const { fullName, phone, image: storedImage } = useBarberSignupStore(); // image را هم بگیر
+  const { fullName, phone, image: storedImage, birthDate } = useBarberSignupStore();
 
   const schema = z.object({
     fullName: z.string().nonempty('نام و نام خانوادگی اجباری است.'),
@@ -26,6 +27,7 @@ export default function BarbaerStep1({ onSubmit }: Step1Props) {
       .string()
       .length(11, 'شماره تلفن وارد شده اشتباه است.')
       .startsWith('09', 'شماره تلفن وارد شده اشتباه است.'),
+    birthDate: z.string().optional(),
     image: z
       .instanceof(File, { message: 'عکس پروفایل اجباری است' })
       .refine(file => file.size <= 5 * 1024 * 1024, `حداکثر حجم 5MB`)
@@ -41,7 +43,8 @@ export default function BarbaerStep1({ onSubmit }: Step1Props) {
     defaultValues: {
       fullName: fullName || '',
       phone: phone || '',
-      image: storedImage || undefined, // اگر تصویر وجود داشت، مقدار base64
+      image: storedImage || undefined,
+      birthDate: birthDate || '',
     },
     resolver: zodResolver(schema),
   });
@@ -76,6 +79,7 @@ export default function BarbaerStep1({ onSubmit }: Step1Props) {
       fullName: data.fullName,
       phone: data.phone,
       image: imageBase64,
+      birthDate: data.birthDate || '',
     });
   };
 
@@ -98,6 +102,11 @@ export default function BarbaerStep1({ onSubmit }: Step1Props) {
       <div className="space-y-4">
         <RHFInput label="نام و نام خانوادگی" name="fullName" />
         <RHFInput label="شماره موبایل" name="phone" />
+        <PersianDatePicker
+          name="birthDate"
+          label="تاریخ تولد"
+          placeholder="انتخاب تاریخ تولد"
+        />
         <RHFImageUploader
           name="image"
           label="عکس پروفایل"

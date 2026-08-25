@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import * as z from 'zod';
 
 import FormProvider from '@/components/form/form-provider';
+import { PersianDatePicker } from '@/components/form/persian-date-picker';
 import RHFInput from '@/components/form/rhf-input';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,6 +18,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { isoToJalali, jalaliToIso } from '@/lib/date-utils';
 import { User } from '@/services/features/barber/types';
 import { useEditUser } from '@/services/features/users/hooks';
 
@@ -28,6 +30,7 @@ interface EditProfileModalProps {
 
 const schema = z.object({
   fullName: z.string().min(1, 'نام و نام خانوادگی اجباری است'),
+  birthDate: z.string().optional().nullable(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -41,6 +44,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
     resolver: zodResolver(schema),
     defaultValues: {
       fullName: user?.data?.fullName || '',
+      birthDate: null,
     },
   });
 
@@ -51,15 +55,21 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   // هر بار که user یا open تغییر می‌کند، فرم را با مقادیر جدید reset کن
   useEffect(() => {
     if (open && user) {
+      // تبدیل تاریخ میلادی به شمسی برای نمایش در فرم
       reset({
         fullName: user.data?.fullName || '',
+        birthDate: isoToJalali(user.data?.birthDate) || null,
       });
     }
   }, [open, user, reset]);
 
   const onSubmit = async (data: FormData) => {
     try {
-      await editUserMutation.mutateAsync(data);
+      // تبدیل تاریخ شمسی به میلادی برای ارسال به سرور
+      await editUserMutation.mutateAsync({
+        fullName: data.fullName,
+        birthDate: jalaliToIso(data.birthDate),
+      });
       toast.success('اطلاعات پروفایل بروزرسانی شد.');
       onOpenChange(false);
     } catch (error) {
@@ -91,6 +101,11 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
             name="fullName"
             label="نام و نام خانوادگی"
             placeholder="نام خود را وارد کنید"
+          />
+
+          <PersianDatePicker
+            name="birthDate"
+            label="تاریخ تولد"
           />
 
           <div>

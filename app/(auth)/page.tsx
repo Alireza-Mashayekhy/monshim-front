@@ -16,6 +16,8 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
 
+import { PersianDatePicker } from '@/components/form/persian-date-picker';
+import { jalaliToIso } from '@/lib/date-utils';
 import FormProvider from '@/components/form/form-provider';
 import RHFInput from '@/components/form/rhf-input';
 import { Button } from '@/components/ui/button';
@@ -24,15 +26,17 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from '@/components/ui/input-otp';
-import { useLogin, useSendOtp } from '@/services/features/auth/hooks';
+import { useLogin, useSendOtp, useSignUp } from '@/services/features/auth/hooks';
 import { sendOtpDto } from '@/services/features/auth/types';
 
 export default function Login() {
   const [step, setStep] = useState<number>(1);
   const [code, setCode] = useState('');
+  const [isNewUser, setIsNewUser] = useState(false);
 
   const sendOtpMutation = useSendOtp();
   const loginMutation = useLogin();
+  const signUpMutation = useSignUp();
 
   const router = useRouter();
 
@@ -51,19 +55,23 @@ export default function Login() {
   });
 
   const schemaInfo = z.object({
-    name: z.string(),
+    fullName: z.string().nonempty('نام و نام خانوادگی اجباری است.'),
+    birthDate: z.string().optional(),
   });
 
   const methodsInfo = useForm({
     defaultValues: {
-      name: '',
+      fullName: '',
+      birthDate: '',
     },
     resolver: zodResolver(schemaInfo),
   });
 
   const onSubmit = async (data: sendOtpDto) => {
     try {
-      sendOtpMutation.mutateAsync(data);
+      const response = await sendOtpMutation.mutateAsync(data);
+      const newUser = (response as any)?.data?.newUser ?? false;
+      setIsNewUser(newUser);
       setStep(2);
     } catch (error) {
       console.log(error);
@@ -73,6 +81,13 @@ export default function Login() {
   const onSubmitLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    // کاربر جدید → رفتن به مرحله ۳
+    if (isNewUser) {
+      setStep(3);
+      return;
+    }
+
+    // کاربر قدیمی → ورود مستقیم
     try {
       await loginMutation.mutateAsync({
         code,
@@ -82,6 +97,22 @@ export default function Login() {
     } catch (error: any) {
       console.log(error);
       if (error.status === 400) toast.error('کد وارد شده اشتباه است');
+    }
+  };
+
+  const onSubmitSignUp = async (data: { fullName: string; birthDate: string }) => {
+    try {
+      await signUpMutation.mutateAsync({
+        phone: methods.getValues().phone,
+        code,
+        fullName: data.fullName,
+        birthDate: jalaliToIso(data.birthDate) || undefined,
+      });
+      toast.success('ثبت‌نام شما با موفقیت انجام شد!');
+      router.push('/home');
+    } catch (error: any) {
+      console.log(error);
+      if (error.status === 400) toast.error('خطا در ثبت‌نام. مجدداً تلاش کنید.');
     }
   };
 
@@ -207,13 +238,13 @@ export default function Login() {
                 size="lg"
                 className="w-full"
               >
-                ارسال کد
+                {isNewUser ? 'ادامه' : 'ورود'}
               </Button>
             </form>
           ) : (
             <FormProvider
               methods={methodsInfo}
-              onSubmit={() => {}}
+              onSubmit={onSubmitSignUp}
               className="space-y-6 animate-fade-in"
             >
               <div className="text-center">
@@ -224,15 +255,21 @@ export default function Login() {
                   تکمیل اطلاعات
                 </h2>
                 <p className="text-gray-500 text-xs mt-2">
-                  لطفا نام و نام خانوادگی خود را وارد کنید.
+                  لطفا اطلاعات خود را تکمیل کنید.
                 </p>
               </div>
 
-              <RHFInput type="text" name="name" label="نام و نام خانوادگی" />
+              <RHFInput type="text" name="fullName" label="نام و نام خانوادگی" />
+
+              <PersianDatePicker
+                name="birthDate"
+                label="تاریخ تولد"
+                placeholder="انتخاب تاریخ تولد"
+              />
 
               <Button
                 type="submit"
-                loading={sendOtpMutation.isPending}
+                loading={signUpMutation.isPending}
                 size="lg"
                 className="w-full"
               >

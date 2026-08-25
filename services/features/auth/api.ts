@@ -2,7 +2,7 @@ import { api } from '@/services/api/client';
 import { endpoints } from '@/services/api/endpoints';
 import { ApiSingleResponse } from '@/services/api/types';
 
-import { LoginDto, LoginResponse, sendOtpDto, sendOtpResponse } from './types';
+import { LoginDto, LoginResponse, sendOtpDto, sendOtpResponse, SignUpDto } from './types';
 
 export async function login(dto: LoginDto) {
   const { data } = await api.post<ApiSingleResponse<LoginResponse>>(
@@ -16,6 +16,15 @@ export async function login(dto: LoginDto) {
 export async function sendOtp(dto: sendOtpDto) {
   const { data } = await api.post<ApiSingleResponse<sendOtpResponse>>(
     endpoints.auth.otp,
+    dto,
+  );
+
+  return data;
+}
+
+export async function signUp(dto: SignUpDto) {
+  const { data } = await api.post<ApiSingleResponse<LoginResponse>>(
+    endpoints.auth.signUp,
     dto,
   );
 

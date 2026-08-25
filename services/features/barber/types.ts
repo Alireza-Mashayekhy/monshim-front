@@ -38,6 +38,7 @@ export interface BarberProfile {
   fullName: string;
   phone: string;
   email?: string;
+  birthDate?: string | null;
   salonName: string;
   provinceId?: number | null;
   cityId?: number | null;
@@ -58,6 +59,7 @@ export interface BarberProfile {
 
 export interface UpdateBarberProfile {
   fullName?: string;
+  birthDate?: string | null;
   salonName?: string;
   provinceId?: number | null;
   cityId?: number | null;
@@ -76,6 +78,7 @@ export interface User {
   walletBalance: number;
   roles: string[];
   phone: string;
+  birthDate?: string | null;
 }
 
 export interface Notification {

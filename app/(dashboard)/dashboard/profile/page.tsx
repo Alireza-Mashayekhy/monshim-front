@@ -9,6 +9,7 @@ import * as z from 'zod';
 
 import DashboardShell from '@/components/dashboard/layout/dashboard-shell';
 import FormProvider from '@/components/form/form-provider';
+import { PersianDatePicker } from '@/components/form/persian-date-picker';
 import RHFInput from '@/components/form/rhf-input';
 import RHFSelect from '@/components/form/rhf-select';
 import RHFTextArea from '@/components/form/rhf-textarea';
@@ -17,6 +18,7 @@ import FadeIn from '@/components/shared/fade-in';
 import { TimeInput } from '@/components/shared/time-input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { isoToJalali, jalaliToIso } from '@/lib/date-utils';
 import { DefaultImage } from '@/lib/utils';
 import {
   useMyBarberProfile,
@@ -31,6 +33,7 @@ import {
 
 const schema = z.object({
   fullName: z.string().min(1, 'نام و نام خانوادگی الزامی است'),
+  birthDate: z.string().optional().nullable(),
   salonName: z.string().min(1, 'نام فروشگاه الزامی است'),
   provinceId: z.string().nullable(), // ← تغییر از number به string
   cityId: z.string().nullable(), // ← تغییر از number به string
@@ -58,6 +61,7 @@ export default function ProfilePage() {
     resolver: zodResolver(schema),
     defaultValues: {
       fullName: '',
+      birthDate: null,
       salonName: '',
       provinceId: null,
       cityId: null,
@@ -75,6 +79,8 @@ export default function ProfilePage() {
     if (profile?.data) {
       reset({
         fullName: profile.data.fullName || '',
+        // تبدیل تاریخ میلادی به شمسی برای نمایش در فرم
+        birthDate: isoToJalali(profile.data.birthDate) || null,
         salonName: profile.data.salonName || '',
         provinceId: profile.data.provinceId
           ? String(profile.data.provinceId)
@@ -104,6 +110,8 @@ export default function ProfilePage() {
   const onSubmit = (data: FormData) => {
     const payload = {
       ...data,
+      // تبدیل تاریخ شمسی به میلادی برای ارسال به سرور
+      birthDate: jalaliToIso(data.birthDate),
       provinceId: data.provinceId ? parseInt(data.provinceId) : null,
       cityId: data.cityId ? parseInt(data.cityId) : null,
     };
@@ -246,7 +254,10 @@ export default function ProfilePage() {
               <User size={18} className="text-primary-600" />
               اطلاعات فردی
             </h3>
-            <RHFInput name="fullName" label="نام و نام خانوادگی" isRequired />
+            <div className="space-y-4 grid sm:grid-cols-2 gap-4">
+              <RHFInput name="fullName" label="نام و نام خانوادگی" isRequired />
+              <PersianDatePicker name="birthDate" label="تاریخ تولد" />
+            </div>
           </AppCard>
 
           {/* اطلاعات فروشگاه */}

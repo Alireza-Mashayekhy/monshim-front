@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/input-otp';
 import { useRegisterBarber, useSendOtp } from '@/services/features/auth/hooks';
 import { useBarberSignupStore } from '@/store/useBarberSignupStore';
+import { jalaliToIso } from '@/lib/date-utils';
 
 const base64ToBlob = (base64: string): Blob => {
   const parts = base64.split(',');
@@ -64,6 +65,7 @@ export default function BarbaerStep5() {
     portfolio,
     services,
     referralCode,
+    birthDate,
   } = store;
 
   // مرحله ۱: ارسال OTP
@@ -95,8 +97,9 @@ export default function BarbaerStep5() {
         cityId,
         address,
         bio: bio || '',
-        password: '123456', // مقدار واقعی را جایگزین کنید
-        code: otpCode, // کد وارد شده توسط کاربر
+        password: '123456',
+        code: otpCode,
+        birthDate: jalaliToIso(birthDate) || undefined,
         services: services.map(s => ({
           name: s.name,
           price: parseFloat(s.price),

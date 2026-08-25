@@ -4,11 +4,19 @@ export interface sendOtpDto {
 
 export interface sendOtpResponse {
   code: string;
+  newUser?: boolean;
 }
 
 export interface LoginDto {
   phone: string;
   code: string;
+}
+
+export interface SignUpDto {
+  phone: string;
+  code: string;
+  fullName: string;
+  birthDate?: string;
 }
 
 export interface LoginResponse {
