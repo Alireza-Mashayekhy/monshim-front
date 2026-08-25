@@ -10,6 +10,8 @@ import {
   barberList,
   getBarberById,
   getMyBarberProfile,
+  getMyReferralCode,
+  getMyReferrals,
   getWorkHours,
   updateBarberProfile,
   updateWorkHours,
@@ -128,5 +130,21 @@ export const useUpdateWorkHours = () => {
         error.response?.data?.message || 'خطا در به‌روزرسانی ساعات کاری',
       );
     },
+  });
+};
+
+export const useMyReferralCode = () => {
+  return useQuery({
+    queryKey: ['my-referral-code'],
+    queryFn: getMyReferralCode,
+    staleTime: 10 * 60 * 1000, // ۱۰ دقیقه
+  });
+};
+
+export const useMyReferrals = () => {
+  return useQuery({
+    queryKey: ['my-referrals'],
+    queryFn: getMyReferrals,
+    staleTime: 2 * 60 * 1000, // ۲ دقیقه
   });
 };

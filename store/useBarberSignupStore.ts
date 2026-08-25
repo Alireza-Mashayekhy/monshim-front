@@ -26,6 +26,7 @@ interface BarberSignupState {
   bio: string;
   portfolio: string[];
   services: ServiceInput[];
+  referralCode: string; // کد معرف آرایشگر دعوت کننده
 
   setStep: (step: number) => void;
   nextStep: () => void;
@@ -57,6 +58,7 @@ const initialState = {
   bio: '',
   portfolio: [],
   services: [],
+  referralCode: '',
 };
 
 export const useBarberSignupStore = create<BarberSignupState>()(

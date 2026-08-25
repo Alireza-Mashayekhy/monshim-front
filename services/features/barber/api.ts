@@ -74,3 +74,13 @@ export const updateWorkHours = async (dto: { hours: WorkHours[] }) => {
   );
   return data;
 };
+
+export const getMyReferralCode = async () => {
+  const { data } = await api.get(endpoints.barber.referralCode);
+  return data;
+};
+
+export const getMyReferrals = async () => {
+  const { data } = await api.get(endpoints.referral.myReferrals);
+  return data;
+};

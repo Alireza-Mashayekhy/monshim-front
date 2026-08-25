@@ -63,6 +63,7 @@ export default function BarbaerStep5() {
     bio,
     portfolio,
     services,
+    referralCode,
   } = store;
 
   // مرحله ۱: ارسال OTP
@@ -86,7 +87,7 @@ export default function BarbaerStep5() {
       const formData = new FormData();
 
       // فیلدهای متنی به صورت JSON
-      const payload = {
+      const payload: any = {
         fullName,
         phone,
         salonName: shopName,
@@ -101,6 +102,11 @@ export default function BarbaerStep5() {
           price: parseFloat(s.price),
           durationMinutes: parseInt(s.duration, 10),
         })),
+      };
+
+      // اضافه کردن کد معرف (در صورت وجود)
+      if (referralCode && referralCode.trim()) {
+        payload.referralCode = referralCode.trim();
       };
       formData.append('data', JSON.stringify(payload));
 
@@ -259,6 +265,25 @@ export default function BarbaerStep5() {
             <p className="text-sm text-gray-400">هیچ خدمتی ثبت نشده است.</p>
           )}
         </div>
+      </div>
+
+      {/* کد معرف (اختیاری) */}
+      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+        <div className="flex items-center gap-2 text-gray-700 mb-2">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary-600"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+          <h3 className="font-bold text-sm">کد معرف (اختیاری)</h3>
+        </div>
+        <p className="text-xs text-gray-500 mb-3">
+          اگر کد معرف آرایشگری را دارید، در اینجا وارد کنید.
+        </p>
+        <input
+          type="text"
+          placeholder="کد معرف ۸ کاراکتری"
+          className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:bg-white focus:border-primary-500 outline-none transition-colors dir-ltr text-center font-mono tracking-wider"
+          value={referralCode}
+          onChange={e => updateData({ referralCode: e.target.value.toUpperCase() })}
+          maxLength={8}
+        />
       </div>
 
       {/* دکمه‌های پایین */}

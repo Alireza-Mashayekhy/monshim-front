@@ -32,6 +32,7 @@ export const endpoints = {
     updateProfileImage: '/barber/profile/image',
     workHours: '/barber/profile/work-hours',
     updateWorkHours: '/barber/profile/work-hours',
+    referralCode: '/barber/profile/referral-code',
     admin: {
       list: '/admin/barber',
       detail: (id: string) => `/admin/barber/${id}`,
@@ -70,6 +71,10 @@ export const endpoints = {
     list: '/user-subscriptions',
     detail: (id: string) => `/user-subscriptions/${id}`,
     active: '/user-subscriptions/plans',
+  },
+
+  referral: {
+    myReferrals: '/referral/my-referrals',
   },
 
   settings: {

@@ -2,7 +2,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Camera, Clock, Store, User } from 'lucide-react';
+import { Camera, Clock, Copy, Share2, Store, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -20,6 +20,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { DefaultImage } from '@/lib/utils';
 import {
   useMyBarberProfile,
+  useMyReferralCode,
   useUpdateBarberProfile,
   useUploadProfileImage,
 } from '@/services/features/barber/hooks';
@@ -44,6 +45,7 @@ export default function ProfilePage() {
   const { data: profile, isLoading, error } = useMyBarberProfile();
   const updateMutation = useUpdateBarberProfile();
   const uploadImageMutation = useUploadProfileImage();
+  const { data: referralData } = useMyReferralCode();
 
   const { data: provinces } = useProvinceList();
   const selectedProvince = profile?.data?.provinceId;
@@ -284,6 +286,41 @@ export default function ProfilePage() {
                 placeholder="درباره خود و فروشگاهتان..."
               />
             </div>
+          </AppCard>
+
+          {/* کد معرف */}
+          <AppCard>
+            <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+              <Share2 size={18} className="text-primary-600" />
+              کد معرف شما
+            </h3>
+            <p className="text-sm text-gray-500 mb-3">
+              کد معرف خود را با آرایشگرهای دیگر به اشتراک بگذارید. وقتی آرایشگری
+              با کد شما ثبت‌نام کند و ۵ رزرو موفق انجام دهد، ۵۰,۰۰۰ تومان به کیف
+              پول شما اضافه می‌شود.
+            </p>
+            {referralData?.data?.referralCode ? (
+              <div className="flex items-center gap-2">
+                <div className="flex-1 bg-gray-100 rounded-lg px-4 py-3 text-center">
+                  <span className="font-mono text-lg font-bold tracking-widest text-primary-700">
+                    {referralData.data.referralCode}
+                  </span>
+                </div>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      referralData.data.referralCode,
+                    );
+                  }}
+                  className="p-3 bg-primary-100 text-primary-700 rounded-lg hover:bg-primary-200 transition-colors"
+                  title="کپی کد معرف"
+                >
+                  <Copy size={18} />
+                </button>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-400"></p>
+            )}
           </AppCard>
 
           {/* ساعات کاری */}
