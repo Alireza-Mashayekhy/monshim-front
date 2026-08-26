@@ -1,5 +1,5 @@
 export interface UserResponse {
-  fullName: string[];
+  fullName: string;
   roles: string[];
   birthDate: string;
   id: number;

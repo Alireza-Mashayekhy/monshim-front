@@ -24,7 +24,7 @@ export interface LoginResponse {
 }
 
 export interface UserResponse {
-  fullName: string[];
+  fullName: string;
   roles: string[];
   birthDate: Date;
   id: number;

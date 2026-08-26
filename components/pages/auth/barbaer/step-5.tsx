@@ -105,6 +105,7 @@ export default function BarbaerStep5() {
     services,
     referralCode,
     birthDate,
+    updateData,
   } = store;
 
   // مرحله ۱: ارسال OTP

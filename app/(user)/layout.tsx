@@ -30,25 +30,18 @@ export default function UserLayout({
   // بررسی ارایشگر بودن کاربر (پشتیبانی از رشته و آرایه)
   const isBarber = (() => {
     if (!user || Array.isArray(user)) return false;
-    const roles = user.roles;
+
+    const roles = user.roles as string | string[] | undefined;
+
     if (!roles) return false;
-    // اگر roles یه آرایه باشه
+
     if (Array.isArray(roles)) {
-      return roles.some(
-        (r: string) =>
-          r?.toLowerCase().trim() === 'barber',
-      );
+      return roles.some(role => role?.toLowerCase().trim() === 'barber');
     }
-    // اگر roles یه رشته comma-separated باشه
-    if (typeof roles === 'string') {
-      return roles
-        .split(',')
-        .some(
-          (r: string) =>
-            r?.toLowerCase().trim() === 'barber',
-        );
-    }
-    return false;
+
+    return roles
+      .split(',')
+      .some(role => role?.toLowerCase().trim() === 'barber');
   })();
 
   const isActive = (path: string) => pathname === path;
