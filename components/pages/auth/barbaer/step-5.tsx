@@ -9,7 +9,7 @@ import {
   User,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -47,6 +47,40 @@ export default function BarbaerStep5() {
   const [otpCode, setOtpCode] = useState('');
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
+
+  // وقتی کیبورد باز میشه، مودال رو ببر بالا
+  useEffect(() => {
+    if (!isOtpModalOpen) return;
+
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+
+    const handleResize = () => {
+      // پیدا کردنDialogContent در DOM
+      const dialog = document.querySelector('[data-slot="dialog-content"]') as HTMLElement;
+      if (!dialog) return;
+
+      const keyboardHeight = window.innerHeight - viewport.height;
+      if (keyboardHeight > 100) {
+        // کیبورد بازه — مودال رو ببر بالا
+        const offset = Math.min(keyboardHeight * 0.4, 200);
+        dialog.style.transform = `translate(-50%, calc(-50% - ${offset}px))`;
+      } else {
+        // کیبورد بسته شد
+        dialog.style.transform = 'translate(-50%, -50%)';
+      }
+    };
+
+    viewport.addEventListener('resize', handleResize);
+    viewport.addEventListener('scroll', handleResize);
+    return () => {
+      viewport.removeEventListener('resize', handleResize);
+      viewport.removeEventListener('scroll', handleResize);
+      // ریست کردن position
+      const dialog = document.querySelector('[data-slot="dialog-content"]') as HTMLElement;
+      if (dialog) dialog.style.transform = '';
+    };
+  }, [isOtpModalOpen]);
 
   const registerMutation = useRegisterBarber();
   const sendOtpMutation = useSendOtp();
@@ -159,29 +193,33 @@ export default function BarbaerStep5() {
       <div className="space-y-4">
         {/* اطلاعات فردی */}
         <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-          <div className="flex items-center gap-2 text-gray-700 mb-2">
+          <div className="flex items-center gap-2 text-gray-700 mb-3">
             <User size={16} className="text-primary-600" />
             <h3 className="font-bold text-sm">اطلاعات فردی</h3>
           </div>
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div>
-              <span className="text-gray-500">نام و نام خانوادگی:</span>
-              <span className="font-medium mr-1">{fullName || '—'}</span>
+          <div className="space-y-2.5 text-sm">
+            <div className="flex justify-between items-start gap-2">
+              <span className="text-gray-500 shrink-0">نام و نام خانوادگی</span>
+              <span className="font-medium text-left">{fullName || '—'}</span>
             </div>
-            <div>
-              <span className="text-gray-500">شماره موبایل:</span>
-              <span className="font-medium mr-1">{phone || '—'}</span>
+            <div className="flex justify-between items-start gap-2">
+              <span className="text-gray-500 shrink-0">شماره موبایل</span>
+              <span className="font-medium text-left dir-ltr">{phone || '—'}</span>
             </div>
-            <div className="col-span-2">
-              <span className="text-gray-500">عکس پروفایل:</span>
+            <div className="flex justify-between items-start gap-2">
+              <span className="text-gray-500 shrink-0">تاریخ تولد</span>
+              <span className="font-medium text-left">{birthDate || '—'}</span>
+            </div>
+            <div className="flex justify-between items-center gap-2">
+              <span className="text-gray-500 shrink-0">عکس پروفایل</span>
               {image ? (
                 <img
                   src={image}
                   alt="پروفایل"
-                  className="w-12 h-12 rounded-full object-cover border mt-1"
+                  className="w-10 h-10 rounded-full object-cover border"
                 />
               ) : (
-                <span className="text-gray-400 mr-1">انتخاب نشده</span>
+                <span className="text-gray-400">انتخاب نشده</span>
               )}
             </div>
           </div>
@@ -189,26 +227,26 @@ export default function BarbaerStep5() {
 
         {/* اطلاعات سالن */}
         <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
-          <div className="flex items-center gap-2 text-gray-700 mb-2">
+          <div className="flex items-center gap-2 text-gray-700 mb-3">
             <Store size={16} className="text-primary-600" />
             <h3 className="font-bold text-sm">اطلاعات سالن</h3>
           </div>
-          <div className="grid grid-cols-2 gap-2 text-sm">
-            <div>
-              <span className="text-gray-500">نام آرایشگاه:</span>
-              <span className="font-medium mr-1">{shopName || '—'}</span>
+          <div className="space-y-2.5 text-sm">
+            <div className="flex justify-between items-start gap-2">
+              <span className="text-gray-500 shrink-0">نام آرایشگاه</span>
+              <span className="font-medium text-left">{shopName || '—'}</span>
             </div>
-            <div>
-              <span className="text-gray-500">استان:</span>
-              <span className="font-medium mr-1">{provinceName || '—'}</span>
+            <div className="flex justify-between items-start gap-2">
+              <span className="text-gray-500 shrink-0">استان</span>
+              <span className="font-medium text-left">{provinceName || '—'}</span>
             </div>
-            <div>
-              <span className="text-gray-500">شهر:</span>
-              <span className="font-medium mr-1">{cityName || '—'}</span>
+            <div className="flex justify-between items-start gap-2">
+              <span className="text-gray-500 shrink-0">شهر</span>
+              <span className="font-medium text-left">{cityName || '—'}</span>
             </div>
-            <div className="col-span-2">
-              <span className="text-gray-500">آدرس:</span>
-              <span className="font-medium mr-1">{address || '—'}</span>
+            <div className="flex justify-between items-start gap-2">
+              <span className="text-gray-500 shrink-0">آدرس</span>
+              <span className="font-medium text-left leading-5">{address || '—'}</span>
             </div>
           </div>
         </div>
@@ -334,6 +372,7 @@ export default function BarbaerStep5() {
               onChange={value => setOtpCode(value)}
               dir="ltr"
               id="input-otp-ltr"
+              autoFocus
             >
               <InputOTPGroup className="w-full gap-2 flex-row-reverse">
                 <InputOTPSlot

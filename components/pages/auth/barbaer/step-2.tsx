@@ -56,9 +56,11 @@ export default function BarbaerStep2({ onSubmit }: Step2Props) {
 
   const onFormSubmit = (data: any) => {
     const province = provinces?.data?.find(
-      (p: any) => p.id === data.provinceId,
+      (p: any) => String(p.id) === String(data.provinceId),
     );
-    const city = cities?.data?.find((c: any) => c.id === data.cityId);
+    const city = cities?.data?.find(
+      (c: any) => String(c.id) === String(data.cityId),
+    );
 
     onSubmit({
       shopName: data.shopName,
