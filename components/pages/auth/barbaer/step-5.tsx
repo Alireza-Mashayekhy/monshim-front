@@ -25,9 +25,9 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from '@/components/ui/input-otp';
+import { jalaliToIso } from '@/lib/date-utils';
 import { useRegisterBarber, useSendOtp } from '@/services/features/auth/hooks';
 import { useBarberSignupStore } from '@/store/useBarberSignupStore';
-import { jalaliToIso } from '@/lib/date-utils';
 
 const base64ToBlob = (base64: string): Blob => {
   const parts = base64.split(',');
@@ -57,7 +57,9 @@ export default function BarbaerStep5() {
 
     const handleResize = () => {
       // پیدا کردنDialogContent در DOM
-      const dialog = document.querySelector('[data-slot="dialog-content"]') as HTMLElement;
+      const dialog = document.querySelector(
+        '[data-slot="dialog-content"]',
+      ) as HTMLElement;
       if (!dialog) return;
 
       const keyboardHeight = window.innerHeight - viewport.height;
@@ -77,7 +79,9 @@ export default function BarbaerStep5() {
       viewport.removeEventListener('resize', handleResize);
       viewport.removeEventListener('scroll', handleResize);
       // ریست کردن position
-      const dialog = document.querySelector('[data-slot="dialog-content"]') as HTMLElement;
+      const dialog = document.querySelector(
+        '[data-slot="dialog-content"]',
+      ) as HTMLElement;
       if (dialog) dialog.style.transform = '';
     };
   }, [isOtpModalOpen]);
@@ -144,7 +148,7 @@ export default function BarbaerStep5() {
       // اضافه کردن کد معرف (در صورت وجود)
       if (referralCode && referralCode.trim()) {
         payload.referralCode = referralCode.trim();
-      };
+      }
       formData.append('data', JSON.stringify(payload));
 
       // عکس پروفایل
@@ -163,7 +167,7 @@ export default function BarbaerStep5() {
 
       toast.success('ثبت‌نام شما با موفقیت انجام شد!');
       store.reset();
-      router.push('/barber/dashboard');
+      router.push('/dashboard/profile');
     } catch (error: any) {
       console.error('❌ Submission error:', error);
       toast.error(
@@ -204,7 +208,9 @@ export default function BarbaerStep5() {
             </div>
             <div className="flex justify-between items-start gap-2">
               <span className="text-gray-500 shrink-0">شماره موبایل</span>
-              <span className="font-medium text-left dir-ltr">{phone || '—'}</span>
+              <span className="font-medium text-left dir-ltr">
+                {phone || '—'}
+              </span>
             </div>
             <div className="flex justify-between items-start gap-2">
               <span className="text-gray-500 shrink-0">تاریخ تولد</span>
@@ -238,7 +244,9 @@ export default function BarbaerStep5() {
             </div>
             <div className="flex justify-between items-start gap-2">
               <span className="text-gray-500 shrink-0">استان</span>
-              <span className="font-medium text-left">{provinceName || '—'}</span>
+              <span className="font-medium text-left">
+                {provinceName || '—'}
+              </span>
             </div>
             <div className="flex justify-between items-start gap-2">
               <span className="text-gray-500 shrink-0">شهر</span>
@@ -246,7 +254,9 @@ export default function BarbaerStep5() {
             </div>
             <div className="flex justify-between items-start gap-2">
               <span className="text-gray-500 shrink-0">آدرس</span>
-              <span className="font-medium text-left leading-5">{address || '—'}</span>
+              <span className="font-medium text-left leading-5">
+                {address || '—'}
+              </span>
             </div>
           </div>
         </div>
@@ -311,7 +321,23 @@ export default function BarbaerStep5() {
       {/* کد معرف (اختیاری) */}
       <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
         <div className="flex items-center gap-2 text-gray-700 mb-2">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary-600"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="text-primary-600"
+          >
+            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <line x1="19" x2="19" y1="8" y2="14" />
+            <line x1="22" x2="16" y1="11" y2="11" />
+          </svg>
           <h3 className="font-bold text-sm">کد معرف (اختیاری)</h3>
         </div>
         <p className="text-xs text-gray-500 mb-3">
@@ -322,7 +348,9 @@ export default function BarbaerStep5() {
           placeholder="کد معرف ۸ کاراکتری"
           className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:bg-white focus:border-primary-500 outline-none transition-colors dir-ltr text-center font-mono tracking-wider"
           value={referralCode}
-          onChange={e => updateData({ referralCode: e.target.value.toUpperCase() })}
+          onChange={e =>
+            updateData({ referralCode: e.target.value.toUpperCase() })
+          }
           maxLength={8}
         />
       </div>
