@@ -24,8 +24,10 @@ export interface LoginResponse {
 }
 
 export interface UserResponse {
+  id: number;
   fullName: string;
+  phone: string;
   roles: string[];
   birthDate: Date;
-  id: number;
+  isActive: boolean;
 }
