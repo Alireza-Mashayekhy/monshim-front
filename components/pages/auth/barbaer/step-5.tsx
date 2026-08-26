@@ -26,6 +26,7 @@ import {
   InputOTPSlot,
 } from '@/components/ui/input-otp';
 import { jalaliToIso } from '@/lib/date-utils';
+import { formatPrice } from '@/lib/utils';
 import { useRegisterBarber, useSendOtp } from '@/services/features/auth/hooks';
 import { useBarberSignupStore } from '@/store/useBarberSignupStore';
 
@@ -305,7 +306,7 @@ export default function BarbaerStep5() {
                 >
                   <span className="font-medium">{s.name || 'بدون نام'}</span>
                   <span className="text-gray-600">
-                    {s.price ? `${s.price.toLocaleString()} تومان` : '—'}
+                    {s.price ? `${formatPrice(s.price)} تومان` : '—'}
                     {' / '}
                     {s.duration ? `${s.duration} دقیقه` : '—'}
                   </span>

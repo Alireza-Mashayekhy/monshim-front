@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
 import FormProvider from '@/components/form/form-provider';
-import RHFInput from '@/components/form/rhf-input';
+import RHFNumberInput from '@/components/form/rhf-number-input';
 import RHFSelect from '@/components/form/rhf-select';
 import { Button } from '@/components/ui/button';
 import {
@@ -98,11 +98,13 @@ export function WithdrawModal({
           onSubmit={onSubmit}
           className="space-y-4"
         >
-          <RHFInput
+          <RHFNumberInput
             name="amount"
             label="مبلغ (تومان)"
             placeholder="مثلاً ۵۰۰٬۰۰۰"
-            inputMode="numeric"
+            outputType="string"
+            min={200000}
+            max={9999999999}
           />
 
           <div className="text-sm text-gray-500">

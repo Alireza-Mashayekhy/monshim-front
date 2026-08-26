@@ -6,8 +6,11 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const formatPrice = (value: number | string): string => {
-  const num = typeof value === 'string' ? parseFloat(value) : value;
-  return Math.floor(num).toLocaleString();
+  if (value === null || value === undefined || value === '') return '۰';
+  const strValue = typeof value === 'string' ? value.replace(/,/g, '') : String(value);
+  const num = parseFloat(strValue);
+  if (isNaN(num)) return '۰';
+  return Math.floor(num).toLocaleString('en-US');
 };
 
 export const getNext7Days = (): { date: string; label: string }[] => {

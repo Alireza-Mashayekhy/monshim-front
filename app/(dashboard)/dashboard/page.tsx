@@ -6,6 +6,7 @@ import StatCard from '@/components/dashboard/cards/stat-card';
 import DashboardShell from '@/components/dashboard/layout/dashboard-shell';
 import WelcomeCard from '@/components/dashboard/sections/welcome-section';
 import FadeIn from '@/components/shared/fade-in';
+import { formatPrice } from '@/lib/utils';
 import { useDashboardStats } from '@/services/features/dashboard/hooks';
 
 export default function DashboardPage() {
@@ -21,7 +22,7 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 gap-2 lg:gap-4 xl:grid-cols-4">
           <StatCard
             title="موجودی کیف پول"
-            value={isLoading ? '...' : formatPrice(balance?.data?.balance ?? 0)}
+            value={isLoading ? '...' : `${formatPrice(balance?.data?.balance ?? 0)} تومان`}
             icon={DollarSign}
             className="col-span-2 xl:col-span-1"
           />
@@ -51,8 +52,4 @@ export default function DashboardPage() {
 
 function toPersianNumber(value: number | string) {
   return String(value).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[+d]);
-}
-
-function formatPrice(value: number) {
-  return `${new Intl.NumberFormat('fa-IR').format(value)} تومان`;
 }

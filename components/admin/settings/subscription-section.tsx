@@ -24,6 +24,7 @@ import {
   useSubscriptionPlans,
   useToggleSubscriptionPlan,
 } from '@/services/features/subscription/hooks';
+import { formatPrice } from '@/lib/utils';
 import { SubscriptionPlan } from '@/services/features/subscription/types';
 
 import SubscriptionDialog from './subscription-dialog';
@@ -54,10 +55,6 @@ export default function SubscriptionSection() {
     }
 
     deleteMutation.mutate(id);
-  };
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('fa-IR').format(Number(price));
   };
 
   return (

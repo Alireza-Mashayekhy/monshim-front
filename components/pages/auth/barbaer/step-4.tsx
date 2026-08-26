@@ -5,6 +5,7 @@ import { Plus, Scissors, Trash2 } from 'lucide-react';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 
+import FormattedNumberInput from '@/components/form/formatted-number-input';
 import { Button } from '@/components/ui/button';
 import { useBarberSignupStore } from '@/store/useBarberSignupStore';
 
@@ -149,25 +150,19 @@ export default function BarbaerStep4({ onSubmit }: Step4Props) {
                   }
                 />
               </div>
-              <input
+              <FormattedNumberInput
                 placeholder="مبلغ کل (تومان)"
-                type="text"
-                inputMode="numeric"
-                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:bg-white focus:border-primary-500 outline-none transition-colors dir-ltr text-right"
                 value={service.price}
-                onChange={e =>
-                  updateService(service.id, 'price', e.target.value)
+                onChange={val =>
+                  updateService(service.id, 'price', val)
                 }
               />
 
-              <input
+              <FormattedNumberInput
                 placeholder="بیعانه (اختیاری)"
-                type="text"
-                inputMode="numeric"
-                className="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 focus:bg-white focus:border-primary-500 outline-none transition-colors dir-ltr text-right"
-                value={service.depositPrice}
-                onChange={e =>
-                  updateService(service.id, 'depositPrice', e.target.value)
+                value={service.depositPrice || ''}
+                onChange={val =>
+                  updateService(service.id, 'depositPrice', val)
                 }
               />
               <select
