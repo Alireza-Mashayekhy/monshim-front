@@ -73,8 +73,8 @@ export default function Login() {
       const newUser = (response as any)?.data?.newUser ?? false;
       setIsNewUser(newUser);
       setStep(2);
-    } catch (error) {
-      console.log(error);
+    } catch {
+      // خطا در ارسال OTP
     }
   };
 
@@ -95,7 +95,6 @@ export default function Login() {
       });
       router.push('/home');
     } catch (error: any) {
-      console.log(error);
       if (error.status === 400) toast.error('کد وارد شده اشتباه است');
     }
   };
@@ -111,7 +110,6 @@ export default function Login() {
       toast.success('ثبت‌نام شما با موفقیت انجام شد!');
       router.push('/home');
     } catch (error: any) {
-      console.log(error);
       if (error.status === 400) toast.error('خطا در ثبت‌نام. مجدداً تلاش کنید.');
     }
   };

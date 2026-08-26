@@ -32,6 +32,7 @@ export default function BookingWizard() {
   );
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
+  const [shareLink, setShareLink] = useState('');
 
   // Queries & Mutations
   const {
@@ -114,7 +115,10 @@ export default function BookingWizard() {
         <Step1Profile
           barber={barber?.data}
           onStartBooking={() => setStep(2)}
-          onShare={() => setShowShareModal(true)}
+          onShare={() => {
+            setShareLink(window.location.href);
+            setShowShareModal(true);
+          }}
           onImageClick={setSelectedImage}
           onBack={() => router.back()}
         />
@@ -162,7 +166,7 @@ export default function BookingWizard() {
       <ShareModal
         open={showShareModal}
         onClose={() => setShowShareModal(false)}
-        link={window.location.href}
+        link={shareLink}
         shopName={barber.data?.shopName}
       />
     </div>

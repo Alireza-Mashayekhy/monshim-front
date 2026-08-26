@@ -1,7 +1,7 @@
 'use client';
 
 import { ImageIcon, Plus, Trash2, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -16,9 +16,6 @@ export default function BarbaerStep3({ onSubmit }: Step3Props) {
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const portfolioInputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    console.log('📸 Portfolio updated:', portfolio);
-  }, [portfolio]);
 
   const removePortfolioImage = (e: React.MouseEvent, index: number) => {
     e.stopPropagation();
@@ -27,8 +24,6 @@ export default function BarbaerStep3({ onSubmit }: Step3Props) {
   };
 
   const handlePortfolioClick = () => {
-    console.log('🟢 handlePortfolioClick called');
-    console.log('🟢 ref.current:', portfolioInputRef.current);
     if (portfolio.length >= 5) {
       toast.warning('در ثبت نام اولیه حداکثر ۵ عکس مجاز است.');
       return;
@@ -100,7 +95,7 @@ export default function BarbaerStep3({ onSubmit }: Step3Props) {
       <div className="grid grid-cols-3 gap-3">
         {portfolio.map((img, idx) => (
           <div
-            key={`${img.slice(0, 30)}-${idx}`}
+            key={idx}
             className="relative aspect-square rounded-2xl overflow-hidden group shadow-sm border border-gray-100 cursor-pointer bg-gray-100"
             onClick={() => setLightboxImage(img)}
           >

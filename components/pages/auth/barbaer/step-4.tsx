@@ -2,7 +2,6 @@
 'use client';
 
 import { Plus, Scissors, Trash2 } from 'lucide-react';
-import { useEffect } from 'react';
 import { toast } from 'sonner';
 
 import FormattedNumberInput from '@/components/form/formatted-number-input';
@@ -16,10 +15,6 @@ interface Step4Props {
 export default function BarbaerStep4({ onSubmit }: Step4Props) {
   const { services, prevStep, updateData } = useBarberSignupStore();
 
-  // دیباگ: مشاهده تغییرات
-  useEffect(() => {
-    console.log('📋 Services updated:', services);
-  }, [services]);
 
   // حذف سرویس
   const removeService = (id: string) => {
@@ -62,13 +57,13 @@ export default function BarbaerStep4({ onSubmit }: Step4Props) {
       // مبلغ کل
       if (!service.price.trim()) return true;
 
-      const price = Number(service.price);
+      const price = parseFloat(String(service.price).replace(/,/g, ''));
 
       if (isNaN(price) || price <= 0) return true;
 
       // اگر بیعانه وارد شده اعتبارسنجی کن
       if (service.depositPrice?.trim()) {
-        const deposit = Number(service.depositPrice);
+        const deposit = parseFloat(String(service.depositPrice).replace(/,/g, ''));
 
         if (isNaN(deposit) || deposit < 0) return true;
 
@@ -83,7 +78,7 @@ export default function BarbaerStep4({ onSubmit }: Step4Props) {
 
     if (invalidServices.length > 0) {
       const hasInvalidDeposit = invalidServices.some(
-        s => s.depositPrice?.trim() && Number(s.depositPrice) > Number(s.price),
+        s => s.depositPrice?.trim() && parseFloat(String(s.depositPrice).replace(/,/g, '')) > parseFloat(String(s.price).replace(/,/g, '')),
       );
 
       if (hasInvalidDeposit) {

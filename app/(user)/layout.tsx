@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import { useAuthStore } from '@/store/auth.store';
 
@@ -28,7 +28,7 @@ export default function UserLayout({
   const user = useAuthStore(state => state.user);
 
   // بررسی ارایشگر بودن کاربر (پشتیبانی از رشته و آرایه)
-  const isBarber = (() => {
+  const isBarber = useMemo(() => {
     if (!user || Array.isArray(user)) return false;
 
     const roles = user.roles as string | string[] | undefined;
@@ -42,7 +42,7 @@ export default function UserLayout({
     return roles
       .split(',')
       .some(role => role?.toLowerCase().trim() === 'barber');
-  })();
+  }, [user]);
 
   const isActive = (path: string) => pathname === path;
 

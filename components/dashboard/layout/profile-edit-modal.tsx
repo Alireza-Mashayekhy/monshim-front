@@ -71,7 +71,7 @@ export function ProfileEditModal({
   ) => {};
 
   const onSubmit = (data: FormData) => {
-    console.log(data);
+    // TODO: API call to save profile changes
   };
 
   return (

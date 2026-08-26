@@ -137,7 +137,6 @@ export default function BarbaerStep5() {
         cityId,
         address,
         bio: bio || '',
-        password: '123456',
         code: otpCode,
         birthDate: jalaliToIso(birthDate) || undefined,
         services: services.map(s => ({

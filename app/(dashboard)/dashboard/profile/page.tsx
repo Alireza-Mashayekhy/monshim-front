@@ -93,7 +93,7 @@ export default function ProfilePage() {
       });
       setImagePreview(profile.data.profileImage || null);
     }
-  }, [profile?.data]);
+  }, [profile?.data, reset]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

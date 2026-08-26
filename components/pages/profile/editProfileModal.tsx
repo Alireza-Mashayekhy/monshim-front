@@ -72,9 +72,8 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
       });
       toast.success('اطلاعات پروفایل بروزرسانی شد.');
       onOpenChange(false);
-    } catch (error) {
+    } catch {
       toast.error('مشکلی پیش آمده است.');
-      console.log(error);
     }
   };
 

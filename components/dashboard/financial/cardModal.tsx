@@ -23,7 +23,13 @@ const schema = z.object({
     .string()
     .length(16, 'شماره کارت باید ۱۶ رقم باشد')
     .regex(/^\d+$/, 'فقط اعداد مجاز هستند'),
-  shebaNumber: z.string().optional(),
+  shebaNumber: z
+    .string()
+    .optional()
+    .refine(
+      val => !val || /^IR\d{24}$/.test(val),
+      'شماره شبا باید با IR شروع شود و ۲۶ کاراکتر باشد',
+    ),
   ownerName: z.string().min(1, 'نام صاحب حساب الزامی است'),
 });
 
@@ -90,6 +96,7 @@ export function CardModal({ open, onOpenChange }: CardModalProps) {
             placeholder="۶۰۳۷۹۹..."
             inputMode="numeric"
             maxLength={16}
+            dir="ltr"
           />
           <RHFInput
             name="shebaNumber"
