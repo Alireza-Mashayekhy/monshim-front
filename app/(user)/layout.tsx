@@ -26,11 +26,30 @@ export default function UserLayout({
   const pathname = usePathname();
 
   const user = useAuthStore(state => state.user);
-  console.log(user);
-  const isBarber =
-    user !== null &&
-    !Array.isArray(user) &&
-    (user.roles?.includes('barber') || user.roles?.includes('barber '));
+
+  // بررسی ارایشگر بودن کاربر (پشتیبانی از رشته و آرایه)
+  const isBarber = (() => {
+    if (!user || Array.isArray(user)) return false;
+    const roles = user.roles;
+    if (!roles) return false;
+    // اگر roles یه آرایه باشه
+    if (Array.isArray(roles)) {
+      return roles.some(
+        (r: string) =>
+          r?.toLowerCase().trim() === 'barber',
+      );
+    }
+    // اگر roles یه رشته comma-separated باشه
+    if (typeof roles === 'string') {
+      return roles
+        .split(',')
+        .some(
+          (r: string) =>
+            r?.toLowerCase().trim() === 'barber',
+        );
+    }
+    return false;
+  })();
 
   const isActive = (path: string) => pathname === path;
 
