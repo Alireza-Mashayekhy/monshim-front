@@ -52,6 +52,12 @@ export async function proxy(request: NextRequest) {
   let accessTokenValid = false;
   let userPayload: Record<string, any> | null = null;
 
+  console.log('🔐 ACCESS TOKEN EXISTS:', !!token);
+  console.log('🔄 REFRESH TOKEN EXISTS:', !!refreshToken);
+  console.log('👤 ROLE ARRAY:', roleArray);
+  console.log('📍 PATH:', pathname);
+  console.log('✅ ACCESS VALID:', accessTokenValid);
+
   if (token) {
     try {
       const secret = new TextEncoder().encode(process.env.JWT_ACCESS_SECRET);
@@ -59,8 +65,8 @@ export async function proxy(request: NextRequest) {
       roleArray = extractRoles(payload);
       userPayload = payload as Record<string, any>;
       accessTokenValid = true;
-    } catch {
-      // token منقضی یا نامعتبر
+    } catch (error) {
+      console.error('❌ JWT VERIFY ERROR:', error);
     }
   }
 
@@ -116,7 +122,11 @@ export async function proxy(request: NextRequest) {
       phone: userPayload.phone,
       isActive: userPayload.isActive,
     };
-    response.headers.set('X-User-Payload', JSON.stringify(safePayload));
+    const encodedPayload = btoa(
+      unescape(encodeURIComponent(JSON.stringify(safePayload))),
+    );
+
+    response.headers.set('X-User-Payload', encodedPayload);
   }
 
   return response;
