@@ -96,7 +96,7 @@ export default function UserLayout({
               }`}
             >
               <Calendar size={24} />
-              <span className="text-xs">نوبت‌ها</span>
+              <span className="text-xs">نوبت‌های من</span>
             </Link>
 
             {isBarber && (
