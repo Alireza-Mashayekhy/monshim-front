@@ -16,17 +16,23 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
 
-import { PersianDatePicker } from '@/components/form/persian-date-picker';
-import { jalaliToIso } from '@/lib/date-utils';
 import FormProvider from '@/components/form/form-provider';
+import { PersianDatePicker } from '@/components/form/persian-date-picker';
 import RHFInput from '@/components/form/rhf-input';
+import RHFPhoneInput from '@/components/form/rhf-phone-input';
 import { Button } from '@/components/ui/button';
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
 } from '@/components/ui/input-otp';
-import { useLogin, useSendOtp, useSignUp } from '@/services/features/auth/hooks';
+import { jalaliToIso } from '@/lib/date-utils';
+import { normalizePhone, phoneSchema } from '@/lib/phone';
+import {
+  useLogin,
+  useSendOtp,
+  useSignUp,
+} from '@/services/features/auth/hooks';
 import { sendOtpDto } from '@/services/features/auth/types';
 
 export default function Login() {
@@ -41,10 +47,7 @@ export default function Login() {
   const router = useRouter();
 
   const schema = z.object({
-    phone: z
-      .string()
-      .length(11, 'شماره تلفن وارد شده اشتباه است.')
-      .startsWith('09', 'شماره تلفن وارد شده اشتباه است.'),
+    phone: phoneSchema,
   });
 
   const methods = useForm<sendOtpDto>({
@@ -69,7 +72,9 @@ export default function Login() {
 
   const onSubmit = async (data: sendOtpDto) => {
     try {
-      const response = await sendOtpMutation.mutateAsync(data);
+      const response = await sendOtpMutation.mutateAsync({
+        phone: normalizePhone(data.phone),
+      });
       const newUser = (response as any)?.data?.newUser ?? false;
       setIsNewUser(newUser);
       setStep(2);
@@ -91,7 +96,7 @@ export default function Login() {
     try {
       await loginMutation.mutateAsync({
         code,
-        phone: methods.getValues().phone,
+        phone: normalizePhone(methods.getValues().phone),
       });
       router.push('/home');
     } catch (error: any) {
@@ -99,10 +104,13 @@ export default function Login() {
     }
   };
 
-  const onSubmitSignUp = async (data: { fullName: string; birthDate: string }) => {
+  const onSubmitSignUp = async (data: {
+    fullName: string;
+    birthDate: string;
+  }) => {
     try {
       await signUpMutation.mutateAsync({
-        phone: methods.getValues().phone,
+        phone: normalizePhone(methods.getValues().phone),
         code,
         fullName: data.fullName,
         birthDate: jalaliToIso(data.birthDate) || undefined,
@@ -110,7 +118,8 @@ export default function Login() {
       toast.success('ثبت‌نام شما با موفقیت انجام شد!');
       router.push('/home');
     } catch (error: any) {
-      if (error.status === 400) toast.error('خطا در ثبت‌نام. مجدداً تلاش کنید.');
+      if (error.status === 400)
+        toast.error('خطا در ثبت‌نام. مجدداً تلاش کنید.');
     }
   };
 
@@ -146,7 +155,7 @@ export default function Login() {
                   </p>
                 </div>
 
-                <RHFInput
+                <RHFPhoneInput
                   label="شماره تلفن"
                   name="phone"
                   placeholder="شماره موبایل (۰۹۱۲...)"
@@ -257,7 +266,11 @@ export default function Login() {
                 </p>
               </div>
 
-              <RHFInput type="text" name="fullName" label="نام و نام خانوادگی" />
+              <RHFInput
+                type="text"
+                name="fullName"
+                label="نام و نام خانوادگی"
+              />
 
               <PersianDatePicker
                 name="birthDate"

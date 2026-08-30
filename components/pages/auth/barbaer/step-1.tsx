@@ -11,7 +11,9 @@ import FormProvider from '@/components/form/form-provider';
 import { PersianDatePicker } from '@/components/form/persian-date-picker';
 import { RHFImageUploader } from '@/components/form/rhf-image-uploader';
 import RHFInput from '@/components/form/rhf-input';
+import RHFPhoneInput from '@/components/form/rhf-phone-input';
 import { Button } from '@/components/ui/button';
+import { normalizePhone, phoneSchema } from '@/lib/phone';
 import { useBarberSignupStore } from '@/store/useBarberSignupStore';
 
 interface Step1Props {
@@ -19,14 +21,16 @@ interface Step1Props {
 }
 
 export default function BarbaerStep1({ onSubmit }: Step1Props) {
-  const { fullName, phone, image: storedImage, birthDate } = useBarberSignupStore();
+  const {
+    fullName,
+    phone,
+    image: storedImage,
+    birthDate,
+  } = useBarberSignupStore();
 
   const schema = z.object({
     fullName: z.string().nonempty('نام و نام خانوادگی اجباری است.'),
-    phone: z
-      .string()
-      .length(11, 'شماره تلفن وارد شده اشتباه است.')
-      .startsWith('09', 'شماره تلفن وارد شده اشتباه است.'),
+    phone: phoneSchema,
     birthDate: z.string().optional(),
     image: z
       .instanceof(File, { message: 'عکس پروفایل اجباری است' })
@@ -77,7 +81,7 @@ export default function BarbaerStep1({ onSubmit }: Step1Props) {
     // ارسال داده به والد
     onSubmit({
       fullName: data.fullName,
-      phone: data.phone,
+      phone: normalizePhone(data.phone),
       image: imageBase64,
       birthDate: data.birthDate || '',
     });
@@ -101,7 +105,7 @@ export default function BarbaerStep1({ onSubmit }: Step1Props) {
 
       <div className="space-y-4">
         <RHFInput label="نام و نام خانوادگی" name="fullName" />
-        <RHFInput label="شماره موبایل" name="phone" />
+        <RHFPhoneInput label="شماره موبایل" name="phone" />
         <PersianDatePicker
           name="birthDate"
           label="تاریخ تولد"
