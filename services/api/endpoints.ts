@@ -82,4 +82,18 @@ export const endpoints = {
     get: '/admin/settings',
     update: '/admin/settings',
   },
+
+  ticket: {
+    create: '/ticket',
+    list: '/ticket',
+    detail: (id: string) => `/ticket/${id}`,
+    messages: (id: string) => `/ticket/${id}/messages`,
+    close: (id: string) => `/ticket/${id}/close`,
+    admin: {
+      list: '/admin/ticket',
+      detail: (id: string) => `/admin/ticket/${id}`,
+      messages: (id: string) => `/admin/ticket/${id}/messages`,
+      close: (id: string) => `/admin/ticket/${id}/close`,
+    },
+  },
 };
