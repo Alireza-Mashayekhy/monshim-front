@@ -83,6 +83,20 @@ export function formatPersianDate(isoDate: string | null | undefined): string {
 }
 
 /**
+ * نام روز هفته به فارسی (مثل «یکشنبه»)
+ */
+export function formatPersianWeekday(
+  isoDate: string | null | undefined,
+): string {
+  if (!isoDate) return '';
+
+  const date = new Date(isoDate);
+  if (Number.isNaN(date.getTime())) return '';
+
+  return date.toLocaleDateString('fa-IR', { weekday: 'long' });
+}
+
+/**
  * تاریخ کوتاه برای لیست تیکت‌ها:
  * امروز → ساعت، دیروز → «دیروز»، بقیه → تاریخ شمسی
  */

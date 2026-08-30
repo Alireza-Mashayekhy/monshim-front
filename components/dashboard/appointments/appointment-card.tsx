@@ -6,9 +6,13 @@ import { Check, MessageCircle, Phone, XCircle } from 'lucide-react';
 import AppCard from '@/components/shared/app-card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  BOOKING_STATUS_BADGE_CLASS,
+  BOOKING_STATUS_LABEL,
+} from '@/constants/booking';
 import { formatPrice } from '@/lib/utils';
 import { useUpdateBookingStatus } from '@/services/features/booking/hooks';
-import { Booking, BookingStatus } from '@/services/features/booking/types';
+import { Booking } from '@/services/features/booking/types';
 
 interface AppointmentCardProps {
   booking: Booking;
@@ -17,22 +21,6 @@ interface AppointmentCardProps {
 export default function AppointmentCard({ booking }: AppointmentCardProps) {
   const { id, customer, service, date, time, price, status } = booking;
   const updateStatus = useUpdateBookingStatus();
-
-  const statusVariant: Record<BookingStatus, string> = {
-    pending: 'bg-yellow-100 text-yellow-700',
-    confirmed: 'bg-green-100 text-green-700',
-    completed: 'bg-blue-100 text-blue-700',
-    canceled: 'bg-red-100 text-red-700',
-    rejected: 'bg-gray-100 text-gray-700',
-  };
-
-  const statusLabel: Record<BookingStatus, string> = {
-    pending: 'در انتظار تایید',
-    confirmed: 'تایید شده',
-    completed: 'انجام شده',
-    canceled: 'لغو شده',
-    rejected: 'رد شده',
-  };
 
   const handleCall = () => {
     if (customer?.phone) window.location.href = `tel:${customer.phone}`;
@@ -46,8 +34,10 @@ export default function AppointmentCard({ booking }: AppointmentCardProps) {
     <AppCard>
       <div className="flex justify-between items-start">
         <div>
-          <Badge className={`rounded-full ${statusVariant[status]}`}>
-            {statusLabel[status]}
+          <Badge
+            className={`rounded-full ${BOOKING_STATUS_BADGE_CLASS[status]}`}
+          >
+            {BOOKING_STATUS_LABEL[status]}
           </Badge>
           <h3 className="mt-4 text-xl font-bold">
             {customer?.fullName || 'مشتری'}

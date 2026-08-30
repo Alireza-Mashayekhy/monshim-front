@@ -9,9 +9,10 @@ import {
   CreateBookingDto,
   getAvailableSlots,
   getBarberBookings,
+  getMyBookings,
   updateBookingStatus,
 } from './api';
-import { Booking, BookingQueryParams } from './types';
+import { Booking, BookingQueryParams, MyBookingsQuery } from './types';
 
 export const useAvailableSlots = (
   barberId: string,
@@ -82,10 +83,26 @@ export const useCancelBooking = () => {
     mutationFn: (id: string) => cancelBooking(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['barber-bookings'] });
+      queryClient.invalidateQueries({ queryKey: myBookingKeys.all });
       toast.success('نوبت با موفقیت لغو شد.');
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'خطا در لغو نوبت');
     },
+  });
+};
+
+/* ─────────────── نوبت‌های من (سمت کاربر) ─────────────── */
+
+export const myBookingKeys = {
+  all: ['my-bookings'] as const,
+  list: (params: MyBookingsQuery) => ['my-bookings', params] as const,
+};
+
+export const useMyBookings = (params: MyBookingsQuery = {}) => {
+  return useQuery({
+    queryKey: myBookingKeys.list(params),
+    queryFn: () => getMyBookings(params),
+    staleTime: 30 * 1000,
   });
 };

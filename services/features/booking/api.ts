@@ -1,10 +1,19 @@
 // services/features/booking/api.ts
 import { api } from '@/services/api/client';
 import { endpoints } from '@/services/api/endpoints';
-import { ApiListResponse, ApiSingleResponse } from '@/services/api/types';
+import {
+  ApiListResponse,
+  ApiSingleResponse,
+  PaginationMeta,
+} from '@/services/api/types';
 
 import { AvailableSlotsResponse } from '../barber/types';
-import { Booking, BookingQueryParams } from './types';
+import {
+  Booking,
+  BookingQueryParams,
+  MyBooking,
+  MyBookingsQuery,
+} from './types';
 
 export interface CreateBookingDto {
   barberId: number;
@@ -70,4 +79,25 @@ export const confirmBooking = async (id: string): Promise<Booking> => {
 export const cancelBooking = async (id: string): Promise<Booking> => {
   const { data } = await api.patch(`/bookings/${id}/cancel`);
   return data;
+};
+
+export const getMyBookings = async (
+  params?: MyBookingsQuery,
+): Promise<{ data: MyBooking[]; pagination?: PaginationMeta }> => {
+  const { data } = await api.get('/bookings/my', { params });
+
+  const payload = data?.data;
+
+  // پشتیبانی از هر دو حالت: آرایه مستقیم یا بسته‌ی صفحه‌بندی‌شده
+  const list: MyBooking[] = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload?.data)
+      ? payload.data
+      : [];
+
+  const pagination: PaginationMeta | undefined = Array.isArray(payload)
+    ? data?.pagination
+    : (payload?.pagination ?? data?.pagination);
+
+  return { data: list, pagination };
 };
