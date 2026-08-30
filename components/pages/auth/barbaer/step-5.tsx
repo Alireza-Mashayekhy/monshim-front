@@ -27,6 +27,7 @@ import {
 } from '@/components/ui/input-otp';
 import { useVisualViewport } from '@/hooks/use-visual-viewport';
 import { jalaliToIso } from '@/lib/date-utils';
+import { normalizePhone } from '@/lib/phone';
 import { formatPrice } from '@/lib/utils';
 import { useRegisterBarber, useSendOtp } from '@/services/features/auth/hooks';
 import { useBarberSignupStore } from '@/store/useBarberSignupStore';
@@ -79,7 +80,7 @@ export default function BarbaerStep5() {
   const handleSendOtp = async () => {
     setIsSendingOtp(true);
     try {
-      await sendOtpMutation.mutateAsync({ phone });
+      await sendOtpMutation.mutateAsync({ phone: normalizePhone(phone) });
       setIsOtpModalOpen(true);
       toast.success('کد تأیید به شماره شما ارسال شد.');
     } catch (error: any) {
@@ -98,7 +99,8 @@ export default function BarbaerStep5() {
       // فیلدهای متنی به صورت JSON
       const payload: any = {
         fullName,
-        phone,
+        // ارقام فارسی/عربی به انگلیسی تبدیل می‌شود
+        phone: normalizePhone(phone),
         salonName: shopName,
         provinceId,
         cityId,
