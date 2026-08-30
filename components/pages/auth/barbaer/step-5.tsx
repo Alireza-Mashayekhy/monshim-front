@@ -9,7 +9,7 @@ import {
   User,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from '@/components/ui/input-otp';
+import { useVisualViewport } from '@/hooks/use-visual-viewport';
 import { jalaliToIso } from '@/lib/date-utils';
 import { formatPrice } from '@/lib/utils';
 import { useRegisterBarber, useSendOtp } from '@/services/features/auth/hooks';
@@ -49,43 +50,9 @@ export default function BarbaerStep5() {
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
 
-  // وقتی کیبورد باز میشه، مودال رو ببر بالا
-  useEffect(() => {
-    if (!isOtpModalOpen) return;
-
-    const viewport = window.visualViewport;
-    if (!viewport) return;
-
-    const handleResize = () => {
-      // پیدا کردنDialogContent در DOM
-      const dialog = document.querySelector(
-        '[data-slot="dialog-content"]',
-      ) as HTMLElement;
-      if (!dialog) return;
-
-      const keyboardHeight = window.innerHeight - viewport.height;
-      if (keyboardHeight > 100) {
-        // کیبورد بازه — مودال رو ببر بالا
-        const offset = Math.min(keyboardHeight * 0.4, 200);
-        dialog.style.transform = `translate(-50%, calc(-50% - ${offset}px))`;
-      } else {
-        // کیبورد بسته شد
-        dialog.style.transform = 'translate(-50%, -50%)';
-      }
-    };
-
-    viewport.addEventListener('resize', handleResize);
-    viewport.addEventListener('scroll', handleResize);
-    return () => {
-      viewport.removeEventListener('resize', handleResize);
-      viewport.removeEventListener('scroll', handleResize);
-      // ریست کردن position
-      const dialog = document.querySelector(
-        '[data-slot="dialog-content"]',
-      ) as HTMLElement;
-      if (dialog) dialog.style.transform = '';
-    };
-  }, [isOtpModalOpen]);
+  // هنگام باز شدن کیبورد، مودال در فضای واقعاً قابل‌مشاهده وسط‌چین می‌شود
+  const { height: viewportHeight, top: viewportTop } =
+    useVisualViewport(isOtpModalOpen);
 
   const registerMutation = useRegisterBarber();
   const sendOtpMutation = useSendOtp();
@@ -387,7 +354,19 @@ export default function BarbaerStep5() {
 
       {/* مودال ورود کد */}
       <Dialog open={isOtpModalOpen} onOpenChange={setIsOtpModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent
+          className="sm:max-w-md overflow-y-auto transition-[top,max-height] duration-200 ease-out"
+          style={
+            viewportHeight > 0
+              ? {
+                  // وسطِ فضای واقعاً قابل‌مشاهده (بالای کیبورد)
+                  top: viewportTop + viewportHeight / 2,
+                  // مودال هیچ‌وقت از فضای قابل‌مشاهده بیرون نمی‌زند
+                  maxHeight: Math.max(viewportHeight - 16, 200),
+                }
+              : undefined
+          }
+        >
           <DialogHeader>
             <DialogTitle>تأیید شماره موبایل</DialogTitle>
             <DialogDescription>
