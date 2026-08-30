@@ -54,3 +54,55 @@ export function jalaliToIso(
     return null;
   }
 }
+
+/**
+ * فرمت کردن ساعت به صورت فارسی (مثل ۱۰:۳۰)
+ */
+export function formatPersianTime(isoDate: string | null | undefined): string {
+  if (!isoDate) return '';
+
+  const date = new Date(isoDate);
+  if (Number.isNaN(date.getTime())) return '';
+
+  return date.toLocaleTimeString('fa-IR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+/**
+ * فرمت کردن تاریخ به صورت شمسی (مثل ۱۴۰۵/۰۶/۰۸)
+ */
+export function formatPersianDate(isoDate: string | null | undefined): string {
+  if (!isoDate) return '';
+
+  const date = new Date(isoDate);
+  if (Number.isNaN(date.getTime())) return '';
+
+  return date.toLocaleDateString('fa-IR');
+}
+
+/**
+ * تاریخ کوتاه برای لیست تیکت‌ها:
+ * امروز → ساعت، دیروز → «دیروز»، بقیه → تاریخ شمسی
+ */
+export function formatTicketDate(isoDate: string | null | undefined): string {
+  if (!isoDate) return '';
+
+  const date = new Date(isoDate);
+  if (Number.isNaN(date.getTime())) return '';
+
+  const now = new Date();
+  const startOfToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+  ).getTime();
+
+  const diffDays = Math.floor((startOfToday - date.getTime()) / 86_400_000);
+
+  if (date.getTime() >= startOfToday) return formatPersianTime(isoDate);
+  if (diffDays < 1) return 'دیروز';
+
+  return formatPersianDate(isoDate);
+}

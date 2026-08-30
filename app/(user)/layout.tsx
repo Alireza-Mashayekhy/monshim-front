@@ -55,7 +55,7 @@ export default function UserLayout({
         </div>
 
         {/* Support */}
-        {showNav && (
+        {showNav && !isActive('/support') && (
           <Link href="/support">
             <button
               className="fixed bottom-20 right-4 z-40 bg-white text-primary-600 p-3 rounded-full shadow-lg border border-primary-100 active:scale-95 transition-transform"
