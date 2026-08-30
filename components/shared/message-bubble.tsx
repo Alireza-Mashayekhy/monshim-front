@@ -6,15 +6,24 @@ import type { TicketMessage } from '@/services/features/ticket/types';
 
 interface MessageBubbleProps {
   message: TicketMessage;
-  /** آیا فرستندهٔ پیام کاربر جاری است؟ */
+  /** آیا فرستندهٔ پیام، کاربر جاری (صاحب صفحه) است؟ */
   isOwn: boolean;
+  /** برچسب فرستنده برای پیام‌های خودِ کاربر جاری */
+  ownLabel?: string;
+  /** برچسب فرستنده برای پیام‌های طرف مقابل */
+  otherLabel?: string;
 }
 
-export function MessageBubble({ message, isOwn }: MessageBubbleProps) {
+export function MessageBubble({
+  message,
+  isOwn,
+  ownLabel = 'شما',
+  otherLabel = 'پشتیبانی',
+}: MessageBubbleProps) {
   const isPending = message.id.startsWith('optimistic-');
 
   return (
-    // در راست‌چین: justify-start => سمت راست (پیام کاربر)
+    // در راست‌چین: justify-start => سمت راست (پیام‌های خودِ کاربر جاری)
     <div className={cn('flex w-full', isOwn ? 'justify-start' : 'justify-end')}>
       <div
         className={cn(
@@ -23,19 +32,15 @@ export function MessageBubble({ message, isOwn }: MessageBubbleProps) {
         )}
       >
         {/* نام فرستنده */}
-        <span
-          className={cn(
-            'inline-flex items-center gap-1 text-[10px] text-gray-400 px-1',
-          )}
-        >
+        <span className="inline-flex items-center gap-1 text-[10px] text-gray-400 px-1">
           {isOwn ? (
             <>
-              شما
+              {ownLabel}
               <User size={10} />
             </>
           ) : (
             <>
-              پشتیبانی
+              {otherLabel}
               <Headphones size={10} />
             </>
           )}

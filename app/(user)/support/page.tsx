@@ -5,12 +5,12 @@ import { useMemo, useState } from 'react';
 
 import { NewTicketDialog } from '@/components/pages/support/new-ticket-dialog';
 import { TicketChat } from '@/components/pages/support/ticket-chat';
+import { TicketList } from '@/components/pages/support/ticket-list';
 import {
   TicketFilters,
   type TicketPriorityFilter,
   type TicketStatusFilter,
-} from '@/components/pages/support/ticket-filters';
-import { TicketList } from '@/components/pages/support/ticket-list';
+} from '@/components/shared/ticket-filters';
 import { Button } from '@/components/ui/button';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useTickets } from '@/services/features/ticket/hooks';

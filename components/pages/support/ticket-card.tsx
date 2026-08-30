@@ -1,6 +1,6 @@
 import { ChevronLeft, Headphones } from 'lucide-react';
 
-import { TicketPriorityBadge, TicketStatusBadge } from '@/components/pages/support/ticket-badges';
+import { TicketPriorityBadge, TicketStatusBadge } from '@/components/shared/ticket-badges';
 import { TICKET_DEPARTMENT_LABEL } from '@/constants/ticket';
 import { formatTicketDate } from '@/lib/date-utils';
 import { cn } from '@/lib/utils';

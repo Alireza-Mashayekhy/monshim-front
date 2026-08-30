@@ -166,12 +166,53 @@ export const useSendAdminTicketMessage = () => {
   return useMutation({
     mutationFn: ({ id, dto }: { id: string; dto: SendMessageDto }) =>
       sendAdminTicketMessage(id, dto),
+
+    // نمایش فوری پاسخ ادمین قبل از تأیید سرور
+    onMutate: async ({ id, dto }) => {
+      await queryClient.cancelQueries({ queryKey: ticketKeys.adminDetail(id) });
+      const previous = queryClient.getQueryData<ApiSingleResponse<Ticket>>(
+        ticketKeys.adminDetail(id),
+      );
+
+      queryClient.setQueryData<ApiSingleResponse<Ticket>>(
+        ticketKeys.adminDetail(id),
+        old => {
+          if (!old?.data) return old;
+
+          const optimisticMessage: TicketMessage = {
+            id: `optimistic-${Date.now()}`,
+            ticketId: id,
+            senderRole: 'ADMIN',
+            senderId: 0,
+            message: dto.message,
+            readByUser: false,
+            readByAdmin: true,
+            createdAt: new Date().toISOString(),
+          };
+
+          return {
+            ...old,
+            data: {
+              ...old.data,
+              lastMessage: optimisticMessage,
+              messages: [...(old.data.messages ?? []), optimisticMessage],
+            },
+          };
+        },
+      );
+
+      return { previous };
+    },
+
     onSuccess: (response, { id }) => {
       queryClient.setQueryData(ticketKeys.adminDetail(id), response);
       queryClient.invalidateQueries({ queryKey: ['admin-tickets'] });
-      toast.success('پاسخ با موفقیت ارسال شد.');
     },
-    onError: (error: any) => {
+
+    onError: (error: any, { id }, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(ticketKeys.adminDetail(id), context.previous);
+      }
       toast.error(getErrorMessage(error, 'خطا در ارسال پاسخ'));
     },
   });

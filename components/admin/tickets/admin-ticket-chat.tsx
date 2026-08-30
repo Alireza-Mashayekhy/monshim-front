@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  ChevronRight,
-  Loader2,
-  Lock,
-  MoreVertical,
-  RefreshCw,
-  Send,
-} from 'lucide-react';
+import { ChevronRight, Loader2, Lock, MoreVertical, RefreshCw, Send } from 'lucide-react';
 import { Fragment, useEffect, useRef, useState } from 'react';
 
 import { MessageBubble } from '@/components/shared/message-bubble';
@@ -34,20 +27,21 @@ import { Textarea } from '@/components/ui/textarea';
 import { TICKET_DEPARTMENT_LABEL } from '@/constants/ticket';
 import { formatPersianDate } from '@/lib/date-utils';
 import {
-  useCloseTicket,
-  useSendTicketMessage,
-  useTicket,
+  useAdminTicket,
+  useCloseAdminTicket,
+  useSendAdminTicketMessage,
 } from '@/services/features/ticket/hooks';
 
-interface TicketChatProps {
+interface AdminTicketChatProps {
   ticketId: string;
-  onBack: () => void;
+  /** در حالت موبایل برای بازگشت به لیست استفاده می‌شود */
+  onBack?: () => void;
 }
 
-/** دریافت خودکار پیام‌های جدید پشتیبانی هر ۱۵ ثانیه */
-const REFETCH_INTERVAL = 15_000;
+/** دریافت خودکار پیام‌های جدید کاربران هر ۲۰ ثانیه */
+const REFETCH_INTERVAL = 20_000;
 
-export function TicketChat({ ticketId, onBack }: TicketChatProps) {
+export function AdminTicketChat({ ticketId, onBack }: AdminTicketChatProps) {
   const {
     data,
     isLoading,
@@ -55,7 +49,7 @@ export function TicketChat({ ticketId, onBack }: TicketChatProps) {
     error,
     refetch,
     isRefetching,
-  } = useTicket(ticketId, REFETCH_INTERVAL);
+  } = useAdminTicket(ticketId, REFETCH_INTERVAL);
 
   const ticket = data?.data;
   const messages = ticket?.messages ?? [];
@@ -65,10 +59,9 @@ export function TicketChat({ ticketId, onBack }: TicketChatProps) {
   const [closeOpen, setCloseOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
-  const sendMessage = useSendTicketMessage();
-  const closeTicket = useCloseTicket();
+  const sendMessage = useSendAdminTicketMessage();
+  const closeTicket = useCloseAdminTicket();
 
-  // اسکرول به آخرین پیام
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
   }, [messages.length, ticketId]);
@@ -102,28 +95,36 @@ export function TicketChat({ ticketId, onBack }: TicketChatProps) {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-5rem)]">
-      {/* هدر گفتگو */}
-      <div className="bg-white border-b border-gray-100 px-3 py-3 flex items-center gap-2 shrink-0">
-        <button
-          type="button"
-          onClick={onBack}
-          aria-label="بازگشت"
-          className="text-gray-600 hover:text-gray-900 p-1"
-        >
-          <ChevronRight size={22} />
-        </button>
+    <div className="flex flex-col h-full min-h-0">
+      {/* هدر */}
+      <div className="border-b border-gray-200 px-3 py-3 flex items-center gap-2 shrink-0">
+        {onBack && (
+          <button
+            type="button"
+            onClick={onBack}
+            aria-label="بازگشت به لیست"
+            className="lg:hidden text-gray-600 hover:text-gray-900 p-1"
+          >
+            <ChevronRight size={20} />
+          </button>
+        )}
 
         <div className="min-w-0 flex-1">
-          <p className="font-bold text-sm text-gray-800 truncate">
-            {ticket?.subject ?? 'گفتگو با پشتیبانی'}
+          <p className="font-semibold text-sm text-gray-800 truncate">
+            {ticket?.subject ?? 'گفتگو'}
           </p>
-          <div className="flex items-center gap-1.5 mt-1">
+          <div className="flex items-center gap-1.5 mt-1 flex-wrap">
             {ticket && <TicketStatusBadge status={ticket.status} />}
             {ticket && (
-              <span className="text-[10px] text-gray-400">
-                {TICKET_DEPARTMENT_LABEL[ticket.department]}
-              </span>
+              <>
+                <span className="text-[10px] text-gray-400">
+                  {TICKET_DEPARTMENT_LABEL[ticket.department]}
+                </span>
+                <span className="text-[10px] text-gray-300">•</span>
+                <span className="text-[10px] text-gray-400">
+                  کاربر {ticket.userId.toLocaleString('fa-IR')}
+                </span>
+              </>
             )}
           </div>
         </div>
@@ -163,13 +164,13 @@ export function TicketChat({ ticketId, onBack }: TicketChatProps) {
       </div>
 
       {/* پیام‌ها */}
-      <div className="flex-1 overflow-y-auto bg-gray-50 px-4 py-4">
+      <div className="flex-1 min-h-0 overflow-y-auto bg-gray-50 px-4 py-4">
         {isLoading ? (
           <div className="space-y-4">
             {Array.from({ length: 4 }).map((_, index) => (
               <div
                 key={index}
-                className={`flex ${index % 2 === 0 ? 'justify-end' : 'justify-start'}`}
+                className={`flex ${index % 2 === 0 ? 'justify-start' : 'justify-end'}`}
               >
                 <Skeleton
                   className={`h-14 rounded-2xl ${index % 2 === 0 ? 'w-2/3' : 'w-3/4'}`}
@@ -204,7 +205,7 @@ export function TicketChat({ ticketId, onBack }: TicketChatProps) {
                 <Fragment key={message.id}>
                   {showDate && (
                     <div className="flex justify-center my-3">
-                      <span className="text-[10px] text-gray-500 bg-white border border-gray-100 rounded-full px-3 py-1">
+                      <span className="text-[10px] text-gray-500 bg-white border border-gray-200 rounded-full px-3 py-1">
                         {formatPersianDate(message.createdAt)}
                       </span>
                     </div>
@@ -212,7 +213,9 @@ export function TicketChat({ ticketId, onBack }: TicketChatProps) {
                   <div className="mb-3">
                     <MessageBubble
                       message={message}
-                      isOwn={message.senderRole === 'USER'}
+                      isOwn={message.senderRole === 'ADMIN'}
+                      ownLabel="پشتیبانی"
+                      otherLabel="کاربر"
                     />
                   </div>
                 </Fragment>
@@ -223,12 +226,12 @@ export function TicketChat({ ticketId, onBack }: TicketChatProps) {
         )}
       </div>
 
-      {/* ارسال پیام */}
-      <div className="bg-white border-t border-gray-100 px-3 py-2.5 shrink-0">
+      {/* ارسال پاسخ */}
+      <div className="border-t border-gray-200 px-3 py-2.5 shrink-0">
         {isClosed ? (
           <div className="flex items-center justify-center gap-2 text-xs text-gray-500 py-1.5">
             <Lock size={14} />
-            این تیکت بسته شده است و امکان ارسال پیام وجود ندارد
+            این تیکت بسته شده است و امکان ارسال پاسخ وجود ندارد
           </div>
         ) : (
           <div className="flex items-end gap-2">
@@ -237,15 +240,15 @@ export function TicketChat({ ticketId, onBack }: TicketChatProps) {
               onChange={event => setText(event.target.value)}
               onKeyDown={handleKeyDown}
               rows={1}
-              placeholder="پیام خود را بنویسید..."
-              className="min-h-10 max-h-32 rounded-2xl resize-none bg-gray-50 border-gray-200"
+              placeholder="پاسخ خود را بنویسید..."
+              className="min-h-10 max-h-40 rounded-2xl resize-none bg-gray-50 border-gray-200"
             />
             <Button
               type="button"
               size="icon-lg"
               onClick={handleSend}
               disabled={!text.trim() || sendMessage.isPending}
-              aria-label="ارسال پیام"
+              aria-label="ارسال پاسخ"
               className="shrink-0 size-10 rounded-full"
             >
               {sendMessage.isPending ? (
@@ -260,7 +263,7 @@ export function TicketChat({ ticketId, onBack }: TicketChatProps) {
 
       {/* تایید بستن تیکت */}
       <AlertDialog open={closeOpen} onOpenChange={setCloseOpen}>
-        <AlertDialogContent className="max-w-sm rounded-3xl">
+        <AlertDialogContent className="max-w-sm rounded-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>بستن تیکت</AlertDialogTitle>
             <AlertDialogDescription>
