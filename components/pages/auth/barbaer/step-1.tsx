@@ -2,7 +2,6 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { User } from 'lucide-react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -89,11 +88,18 @@ export default function BarbaerStep1({ onSubmit }: Step1Props) {
       onSubmit={onFormSubmit}
       className="space-y-6 animate-fade-in"
     >
-      <div className="text-center mb-6">
-        <div className="w-16 h-16 bg-primary-50 rounded-full flex items-center justify-center mx-auto mb-3 text-primary-600 border border-primary-100 shadow-sm">
-          <User size={28} />
-        </div>
-        <h2 className="text-lg font-bold text-gray-800">اطلاعات فردی</h2>
+      {/* دایرهٔ آپلود عکس پروفایل به‌جای آیکن بالای فرم */}
+      <div className="flex flex-col items-center text-center mb-6">
+        <RHFImageUploader
+          name="image"
+          setValue={setValue}
+          error={errors.image}
+          maxSize={5 * 1024 * 1024}
+          accept="image/webp"
+          aspectRatio={1}
+          defaultValue={storedImage || undefined}
+        />
+        <h2 className="text-lg font-bold text-gray-800 mt-4">اطلاعات فردی</h2>
         <p className="text-xs text-gray-500 mt-1">
           مشخصات مدیر سالن یا آرایشگر
         </p>
@@ -106,17 +112,6 @@ export default function BarbaerStep1({ onSubmit }: Step1Props) {
           name="birthDate"
           label="تاریخ تولد"
           placeholder="انتخاب تاریخ تولد"
-        />
-        <RHFImageUploader
-          name="image"
-          label="عکس پروفایل"
-          setValue={setValue}
-          error={errors.image}
-          maxSize={5 * 1024 * 1024}
-          accept="image/webp"
-          aspectRatio={1}
-          className="col-span-2"
-          defaultValue={storedImage || undefined} // به کامپوننت بده تا نمایش دهد
         />
       </div>
 
