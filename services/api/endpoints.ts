@@ -46,6 +46,14 @@ export const endpoints = {
   booking: {
     create: '/bookings',
     availableTimes: '/bookings/available-slots',
+    manual: '/bookings/manual',
+  },
+
+  club: {
+    groups: '/club/groups',
+    group: (id: string) => `/club/groups/${id}`,
+    customers: '/club/customers',
+    customer: (id: string) => `/club/customers/${id}`,
   },
 
   services: {

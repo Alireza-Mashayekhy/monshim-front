@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   Scissors,
   UserRound,
+  Users,
   Wallet,
 } from 'lucide-react';
 
@@ -36,4 +37,10 @@ export const dashboardRoutes = [
   },
   { icon: Wallet, title: 'امور مالی', href: '/dashboard/financial' },
   { icon: Gem, title: 'اشتراک', href: '/dashboard/subscription' },
+  // در انتهای لیست باشد؛ نویگیشن موبایل بر اساس ایندکس است
+  {
+    icon: Users,
+    title: 'باشگاه مشتریان',
+    href: '/dashboard/club',
+  },
 ];
