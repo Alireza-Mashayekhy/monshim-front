@@ -94,7 +94,16 @@ export function useRefreshSession() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: refreshSession,
-    onSuccess: async () => {
+    onSuccess: async result => {
+      // کاربرِ تازه بلافاصله در دسترس باشد (+ ری‌فچ در پس‌زمینه برای اطمینان)
+      if (result?.user) {
+        queryClient.setQueryData(authKeys.me, {
+          status: 200,
+          message: '',
+          data: result.user,
+        });
+      }
+
       await queryClient.invalidateQueries({ queryKey: authKeys.me });
     },
   });

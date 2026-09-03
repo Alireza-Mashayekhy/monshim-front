@@ -61,10 +61,18 @@ export async function fetchMe(): Promise<ApiSingleResponse<UserResponse>> {
   } as ApiSingleResponse<UserResponse>;
 }
 
-/** گرفتن توکن تازه (برای زمانی که نقش‌های کاربر تغییر کرده است) */
+/**
+ * گرفتن توکن تازه به همراه کاربرِ به‌روز
+ * (برای زمانی که نقش‌های کاربر تغییر کرده و توکن قدیمی است)
+ */
 export async function refreshSession() {
-  const { data } = await api.post(endpoints.auth.refresh);
-  return data;
+  const { data: refreshed } = await api.post(endpoints.auth.refresh);
+  const { data: me } = await api.get(endpoints.auth.me);
+
+  return {
+    refresh: refreshed,
+    user: extractUser(me?.data),
+  };
 }
 
 export async function logout() {
