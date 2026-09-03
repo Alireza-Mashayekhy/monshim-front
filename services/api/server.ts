@@ -10,12 +10,15 @@ interface ServerRequestOptions {
   next?: NextFetchRequestConfig;
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+const BASE_URL = (process.env.NEXT_PUBLIC_API_URL ?? '').replace(/\/+$/, '');
+
+/** ساخت URL کامل — جلوگیری از مشکل اسلش تهی/اضافی بین BASE_URL و مسیر */
+const buildUrl = (url: string) => `${BASE_URL}/${url.replace(/^\/+/, '')}`;
 
 async function refreshToken() {
   const cookieStore = await cookies();
 
-  const response = await fetch(`${BASE_URL}/auth/refresh`, {
+  const response = await fetch(buildUrl('auth/refresh'), {
     method: 'POST',
     headers: {
       Cookie: cookieStore.toString(),
@@ -40,7 +43,7 @@ export async function serverFetch<T>(
         ? options.body
         : JSON.stringify(options.body);
 
-  let res = await fetch(`${BASE_URL}${url}`, {
+  let res = await fetch(buildUrl(url), {
     method: options.method ?? 'GET',
     headers: {
       ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
@@ -56,7 +59,7 @@ export async function serverFetch<T>(
     const refreshed = await refreshToken();
 
     if (refreshed) {
-      res = await fetch(`${BASE_URL}${url}`, {
+      res = await fetch(buildUrl(url), {
         method: options.method ?? 'GET',
         headers: {
           ...(isFormData ? {} : { 'Content-Type': 'application/json' }),

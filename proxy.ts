@@ -52,12 +52,6 @@ export async function proxy(request: NextRequest) {
   let accessTokenValid = false;
   let userPayload: Record<string, any> | null = null;
 
-  console.log('🔐 ACCESS TOKEN EXISTS:', !!token);
-  console.log('🔄 REFRESH TOKEN EXISTS:', !!refreshToken);
-  console.log('👤 ROLE ARRAY:', roleArray);
-  console.log('📍 PATH:', pathname);
-  console.log('✅ ACCESS VALID:', accessTokenValid);
-
   if (token) {
     try {
       const secret = new TextEncoder().encode(process.env.JWT_ACCESS_SECRET);
@@ -65,8 +59,8 @@ export async function proxy(request: NextRequest) {
       roleArray = extractRoles(payload);
       userPayload = payload as Record<string, any>;
       accessTokenValid = true;
-    } catch (error) {
-      console.error('❌ JWT VERIFY ERROR:', error);
+    } catch {
+      // توکن نامعتبر/منقضی — با رفرش سمت کلاینت دوباره تلاش می‌شود
     }
   }
 
@@ -86,11 +80,14 @@ export async function proxy(request: NextRequest) {
   // ─── access token نامعتبر ولی refresh token وجود دارد ───
   // برای مسیرهای محافظت‌شده باید access token معتبر باشه تا نقش‌ها بررسی بشه
   if (!accessTokenValid && refreshToken) {
-    // مسیرهای محافظت‌شده نیاز به access token معتبر دارن
-    if (pathname.startsWith('/admin') || pathname.startsWith('/dashboard')) {
+    // اکسس‌تاکن منقضی شده؛ فرانت‌اند آن را رفرش می‌کند.
+    // فقط مسیرهای ادمین را مسدود می‌کنیم (نقش‌ها را نمی‌توان از توکن منقضی خواند)؛
+    // برای بقیه مسیرها (مثل /dashboard) اجازه می‌دهیم و تشخیص نهایی با API است
+    // که بر اساس نقش‌های واقعیِ کاربر تصمیم می‌گیرد.
+    if (pathname.startsWith('/admin')) {
       return NextResponse.redirect(new URL('/', request.url));
     }
-    // سایر مسیرها عبور کنن (رفرش توسط فرانت‌اند انجام میشه)
+
     return NextResponse.next();
   }
 
@@ -105,19 +102,26 @@ export async function proxy(request: NextRequest) {
 
   // ─── محافظت مسیرهای داشبورد (فقط آرایشگر) ───
   if (pathname.startsWith('/dashboard')) {
-    const hasAccess = roleArray.includes('barber');
+    const barberRoles = ['barber', 'barber '];
+
+    const hasAccess = roleArray.some(role => barberRoles.includes(role));
     if (!hasAccess) {
       return NextResponse.redirect(new URL('/home', request.url));
     }
   }
 
-  // ─── ارسال اطلاعات کاربر از JWT به صورت header برای پر کردن store ───
-  const response = NextResponse.next();
+  // ─── ارسال اطلاعات کاربر از JWT به صورت header برای پر کردن استور ───
+  // نکته مهم: باید روی «درخواست» ست شود تا Server Componentها
+  // (مثل app/layout.tsx) بتوانند آن را با headers() بخوانند.
+  // ست کردن روی پاسخ فقط برای مرورگر ارسال می‌شود و در SSR قابل خواندن نیست.
+  const requestHeaders = new Headers(request.headers);
+
   if (userPayload) {
     const safePayload = {
       id: userPayload.id,
       fullName: userPayload.fullName,
-      roles: userPayload.roles,
+      // همیشه آرایه (در توکن ممکن است رشته‌ی جداشده با کاما باشد)
+      roles: roleArray,
       birthDate: userPayload.birthDate,
       phone: userPayload.phone,
       isActive: userPayload.isActive,
@@ -126,10 +130,10 @@ export async function proxy(request: NextRequest) {
       unescape(encodeURIComponent(JSON.stringify(safePayload))),
     );
 
-    response.headers.set('X-User-Payload', encodedPayload);
+    requestHeaders.set('X-User-Payload', encodedPayload);
   }
 
-  return response;
+  return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
 // ─── پیکربندی مسیرهایی که proxy روی آنها اجرا شود ───

@@ -6,6 +6,7 @@ export const endpoints = {
     signUp: '/auth/sign-up',
     me: '/auth/me',
     logout: '/auth/logout',
+    refresh: '/auth/refresh',
   },
 
   users: {

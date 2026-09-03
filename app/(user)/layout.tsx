@@ -10,9 +10,9 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import React, { useMemo } from 'react';
+import React from 'react';
 
-import { useAuthStore } from '@/store/auth.store';
+import { useCurrentUser } from '@/services/features/auth/hooks';
 
 interface UserLayoutProps {
   children: React.ReactNode;
@@ -25,24 +25,8 @@ export default function UserLayout({
 }: UserLayoutProps) {
   const pathname = usePathname();
 
-  const user = useAuthStore(state => state.user);
-
-  // بررسی ارایشگر بودن کاربر (پشتیبانی از رشته و آرایه)
-  const isBarber = useMemo(() => {
-    if (!user || Array.isArray(user)) return false;
-
-    const roles = user.roles as string | string[] | undefined;
-
-    if (!roles) return false;
-
-    if (Array.isArray(roles)) {
-      return roles.some(role => role?.toLowerCase().trim() === 'barber');
-    }
-
-    return roles
-      .split(',')
-      .some(role => role?.toLowerCase().trim() === 'barber');
-  }, [user]);
+  // تنها منبع حقیقی: پاسخ /auth/me (همگام با سرور، استور و middleware)
+  const { isBarber } = useCurrentUser();
 
   const isActive = (path: string) => pathname === path;
 

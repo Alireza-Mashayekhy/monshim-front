@@ -128,7 +128,7 @@ export default function ClubPage() {
                   setPage(1);
                 }}
                 placeholder="جستجو در نام یا شماره موبایل..."
-                className="pr-9 pl-9 rounded-xl"
+                className="h-10 pr-9 pl-9 rounded-xl"
               />
               {search && (
                 <button
