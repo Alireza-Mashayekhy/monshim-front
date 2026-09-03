@@ -29,7 +29,11 @@ import { useVisualViewport } from '@/hooks/use-visual-viewport';
 import { jalaliToIso } from '@/lib/date-utils';
 import { normalizePhone } from '@/lib/phone';
 import { formatPrice } from '@/lib/utils';
-import { useRegisterBarber, useSendOtp } from '@/services/features/auth/hooks';
+import {
+  useRefreshSession,
+  useRegisterBarber,
+  useSendOtp,
+} from '@/services/features/auth/hooks';
 import { useBarberSignupStore } from '@/store/useBarberSignupStore';
 
 const base64ToBlob = (base64: string): Blob => {
@@ -57,6 +61,8 @@ export default function BarbaerStep5() {
 
   const registerMutation = useRegisterBarber();
   const sendOtpMutation = useSendOtp();
+  // بعد از ثبت‌نام، نقش کاربر در سرور تغییر می‌کند؛ توکن تازه می‌گیریم
+  const refreshSessionMutation = useRefreshSession();
 
   const {
     fullName,
@@ -134,6 +140,9 @@ export default function BarbaerStep5() {
       });
 
       await registerMutation.mutateAsync(formData);
+
+      // نقش کاربر عوض شده؛ توکن تازه می‌گیریم تا نقش آرایشگر در آن باشد
+      await refreshSessionMutation.mutateAsync().catch(() => {});
 
       toast.success('ثبت‌نام شما با موفقیت انجام شد!');
       store.reset();

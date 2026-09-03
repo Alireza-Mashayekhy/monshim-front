@@ -1,8 +1,16 @@
+import { extractUser } from '@/lib/roles';
 import { api } from '@/services/api/client';
 import { endpoints } from '@/services/api/endpoints';
 import { ApiSingleResponse } from '@/services/api/types';
 
-import { LoginDto, LoginResponse, sendOtpDto, sendOtpResponse, SignUpDto } from './types';
+import {
+  LoginDto,
+  LoginResponse,
+  sendOtpDto,
+  sendOtpResponse,
+  SignUpDto,
+  UserResponse,
+} from './types';
 
 export async function login(dto: LoginDto) {
   const { data } = await api.post<ApiSingleResponse<LoginResponse>>(
@@ -39,8 +47,23 @@ export async function registerBarber(dto: FormData) {
   return data;
 }
 
-export async function fetchMe() {
+/**
+ * دریافت اطلاعات کاربر جاری.
+ * پاسخ همیشه نرمال می‌شود: یک کاربر با نقش‌های آرایه‌ای
+ * (گاهی بک‌اند آرایه برمی‌گرداند یا نقش‌ها رشته‌ی جداشده با کاما هستند)
+ */
+export async function fetchMe(): Promise<ApiSingleResponse<UserResponse>> {
   const { data } = await api.get(endpoints.auth.me);
+
+  return {
+    ...data,
+    data: extractUser(data?.data) as UserResponse,
+  } as ApiSingleResponse<UserResponse>;
+}
+
+/** گرفتن توکن تازه (برای زمانی که نقش‌های کاربر تغییر کرده است) */
+export async function refreshSession() {
+  const { data } = await api.post(endpoints.auth.refresh);
   return data;
 }
 

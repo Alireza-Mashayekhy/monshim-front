@@ -19,13 +19,13 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { isoToJalali, jalaliToIso } from '@/lib/date-utils';
-import { User } from '@/services/features/barber/types';
+import { UserResponse } from '@/services/features/auth/types';
 import { useEditUser } from '@/services/features/users/hooks';
 
 interface EditProfileModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  user?: { data: User };
+  user?: { data: UserResponse };
 }
 
 const schema = z.object({

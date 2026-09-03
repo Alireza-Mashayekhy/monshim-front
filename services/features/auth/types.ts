@@ -28,6 +28,6 @@ export interface UserResponse {
   fullName: string;
   phone: string;
   roles: string[];
-  birthDate: Date;
+  birthDate: string;
   isActive: boolean;
 }

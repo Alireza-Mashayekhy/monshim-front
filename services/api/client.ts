@@ -29,8 +29,13 @@ api.interceptors.response.use(
       _retry?: boolean;
     };
 
+    // ۴۰۱: توکن منقضی شده — ۴۰۳: نقش‌های توکن قدیمی است
+    // (مثلاً کاربر تازه آرایشگر شده؛ با رفرش، توکن جدید با نقش‌های به‌روز صادر می‌شود)
+    const status = error.response?.status;
+    const shouldRefreshSession = status === 401 || status === 403;
+
     if (
-      error.response?.status !== 401 ||
+      !shouldRefreshSession ||
       originalRequest._retry ||
       originalRequest.url?.includes('/auth/refresh')
     ) {

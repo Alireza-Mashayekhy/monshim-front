@@ -1,13 +1,17 @@
 import './globals.css';
 
+import { dehydrate } from '@tanstack/react-query';
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
 
 import { iranSans } from '@/components/font';
+import { makeQueryClient } from '@/lib/query-client';
+import { extractUser, normalizeRoles } from '@/lib/roles';
 import { cn } from '@/lib/utils';
 import AuthProvider from '@/providers/auth.provider';
-import { UserResponse } from '@/services/features/auth/types';
+import { authKeys } from '@/services/features/auth/hooks';
 import { getMe } from '@/services/features/auth/server.api';
+import { UserResponse } from '@/services/features/auth/types';
 
 import Providers from './providers';
 
@@ -21,13 +25,15 @@ export const metadata: Metadata = {
  * اگه API خطا داد (مثلاً توکن منقضی)، از header middleware استفاده می‌کنه.
  */
 async function resolveUser(): Promise<UserResponse | null> {
-  // ۱. تلاش برای گرفتن کاربر از API
+  // ۱. تلاش برای گرفتن کاربر از API (منبع حقیقی: دیتابیس)
   try {
     const response = await getMe();
-    if (response?.data) {
-      return response.data;
+    const user = extractUser(response?.data);
+
+    if (user) {
+      return user;
     }
-  } catch (error) {
+  } catch {
     // getMe خطا داد — از middleware header استفاده کن
   }
 
@@ -36,11 +42,15 @@ async function resolveUser(): Promise<UserResponse | null> {
     const headerStore = await headers();
     const userPayload = headerStore.get('X-User-Payload');
     if (userPayload) {
-      const parsed = JSON.parse(userPayload);
+      // میان‌افزار پیام را base64 می‌کند (هدرها فقط ASCII هستند)
+      const decoded = Buffer.from(userPayload, 'base64').toString('utf8');
+      const parsed = JSON.parse(decoded);
+
+      // نرمال‌سازی: نقش‌ها همیشه آرایه باشند (از توکن ممکن است رشته بیاید)
       return {
         id: parsed.id,
         fullName: parsed.fullName,
-        roles: parsed.roles,
+        roles: normalizeRoles(parsed.roles),
         birthDate: parsed.birthDate,
         phone: parsed.phone,
         isActive: parsed.isActive,
@@ -51,6 +61,24 @@ async function resolveUser(): Promise<UserResponse | null> {
   }
 
   return null;
+}
+
+/**
+ * کاربر را از سرور می‌گیریم و در کش react-query می‌گذاریم تا
+ * در اولین رندر مرورگر هم در دسترس باشد (بدون پرش/خالی ماندن منوها).
+ */
+function buildDehydratedState(user: UserResponse | null) {
+  const queryClient = makeQueryClient();
+
+  if (user) {
+    queryClient.setQueryData(authKeys.me, {
+      status: 200,
+      message: '',
+      data: user,
+    });
+  }
+
+  return dehydrate(queryClient);
 }
 
 export default async function RootLayout({
@@ -67,7 +95,7 @@ export default async function RootLayout({
       className={cn('h-full', 'antialiased', 'font-sans', iranSans.className)}
     >
       <body className="min-h-full flex flex-col">
-        <Providers>
+        <Providers dehydratedState={buildDehydratedState(user)}>
           <AuthProvider initialUser={user}>{children}</AuthProvider>
         </Providers>
       </body>
