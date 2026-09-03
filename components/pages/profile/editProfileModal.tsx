@@ -19,13 +19,13 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { isoToJalali, jalaliToIso } from '@/lib/date-utils';
-import { User } from '@/services/features/barber/types';
+import { UserResponse } from '@/services/features/auth/types';
 import { useEditUser } from '@/services/features/users/hooks';
 
 interface EditProfileModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  user?: { data: User };
+  user?: { data: UserResponse };
 }
 
 const schema = z.object({
@@ -102,10 +102,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
             placeholder="نام خود را وارد کنید"
           />
 
-          <PersianDatePicker
-            name="birthDate"
-            label="تاریخ تولد"
-          />
+          <PersianDatePicker name="birthDate" label="تاریخ تولد" />
 
           <div>
             <label className="text-xs font-bold text-gray-500 mb-1 block">

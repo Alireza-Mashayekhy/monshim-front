@@ -3,10 +3,10 @@
 
 import { Button } from '@/components/ui/button';
 import { isoToJalali } from '@/lib/date-utils';
-import { User } from '@/services/features/barber/types';
+import { UserResponse } from '@/services/features/auth/types';
 
 interface UserCardProps {
-  user?: { data: User };
+  user?: { data: UserResponse };
   onEdit: () => void;
 }
 

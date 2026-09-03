@@ -1,9 +1,10 @@
 export interface UserResponse {
+  id: number;
   fullName: string;
+  phone: string;
   roles: string[];
   birthDate: string;
-  id: number;
-  phone: string;
+  isActive: boolean;
 }
 
 export interface UsersListResponse {
