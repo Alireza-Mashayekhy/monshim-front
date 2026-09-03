@@ -124,15 +124,17 @@ export default function Login() {
   };
 
   return (
-    <div className="fixed top-0 left-0 w-full h-[45vh] bg-linear-to-br from-primary-600 to-teal-800 rounded-b-[40px] shadow-lg z-0">
+    <div className="fixed top-0 left-0 w-full h-[45vh] bg-linear-to-br from-primary-600 to-teal-800 rounded-b-xl shadow-lg z-0">
       <div className="relative z-10 w-full max-w-md mx-auto flex flex-col min-h-dhv p-6">
         <div className="mt-8 mb-6 text-center text-white shrink-0">
-          <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/30 shadow-xl">
-            <Sparkles className="text-white w-10 h-10" />
+          <div className="flex items-center justify-center mb-3 gap-2">
+            <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-lg flex items-center justify-center border border-white/30 shadow-xl">
+              <Sparkles className="text-white w-5 h-5" />
+            </div>
+            <h1 className="text-3xl font-black tracking-tight drop-shadow-md">
+              منشیم
+            </h1>
           </div>
-          <h1 className="text-3xl font-black tracking-tight mb-2 drop-shadow-md">
-            منشیم
-          </h1>
           <p className="text-primary-100 text-sm font-medium opacity-90">
             سامانه هوشمند رزرو آنلاین آرایشگاه
           </p>
