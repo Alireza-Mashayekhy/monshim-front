@@ -37,7 +37,8 @@
 //   return [];
 // }
 
-export async function proxy(request: NextRequest) {
+export async function proxy() {
+// request: NextRequest
   // const token = request.cookies.get('access_token')?.value;
   // const refreshToken = request.cookies.get('refresh_token')?.value;
   // const pathname = request.nextUrl.pathname;
