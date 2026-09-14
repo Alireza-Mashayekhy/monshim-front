@@ -65,11 +65,10 @@ api.interceptors.response.use(
     try {
       await refreshSessionRequest();
     } catch (refreshError) {
-      // Offline/5xx is not proof of logout; preserve the session for retry.
-      if (
-        axios.isAxiosError(refreshError) &&
-        [401, 403].includes(refreshError.response?.status ?? 0)
-      ) {
+      const refreshStatus = axios.isAxiosError(refreshError)
+        ? refreshError.response?.status
+        : undefined;
+      if (refreshStatus !== undefined && refreshStatus < 500) {
         notifySessionExpired();
         return Promise.reject(error);
       }

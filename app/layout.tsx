@@ -21,13 +21,21 @@ export const metadata: Metadata = {
 };
 
 /** Only authoritative API data is hydrated; never fall back to request headers. */
-async function resolveUser(): Promise<UserResponse | null> {
+async function resolveUser(): Promise<{
+  user: UserResponse | null;
+  known: boolean;
+}> {
   const cookieStore = await cookies();
-  if (!cookieStore.has('access_token')) return null;
+  if (!cookieStore.has('access_token')) {
+    // No access token at all: if there's also no refresh token, this is
+    // definitively a logged-out guest — no need to ask the API to confirm it.
+    const hasRefreshToken = cookieStore.has('refresh_token');
+    return { user: null, known: !hasRefreshToken };
+  }
   try {
-    return extractUser(await getMe());
+    return { user: extractUser(await getMe()), known: true };
   } catch {
-    return null;
+    return { user: null, known: false };
   }
 }
 
@@ -35,12 +43,12 @@ async function resolveUser(): Promise<UserResponse | null> {
  * کاربر را از سرور می‌گیریم و در کش react-query می‌گذاریم تا
  * در اولین رندر مرورگر هم در دسترس باشد (بدون پرش/خالی ماندن منوها).
  */
-function buildDehydratedState(user: UserResponse | null) {
+function buildDehydratedState(user: UserResponse | null, known: boolean) {
   const queryClient = makeQueryClient();
 
-  if (user) {
+  if (known) {
     queryClient.setQueryData(authKeys.me, {
-      status: 200,
+      status: user ? 200 : 401,
       message: '',
       data: user,
     });
@@ -54,7 +62,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const user = await resolveUser();
+  const { user, known } = await resolveUser();
 
   return (
     <html
@@ -63,7 +71,7 @@ export default async function RootLayout({
       className={cn('h-full', 'antialiased', 'font-sans', iranSans.className)}
     >
       <body className="min-h-full flex flex-col">
-        <Providers dehydratedState={buildDehydratedState(user)}>
+        <Providers dehydratedState={buildDehydratedState(user, known)}>
           <AuthProvider>{children}</AuthProvider>
         </Providers>
       </body>
