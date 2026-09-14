@@ -6,7 +6,7 @@ import { isoToJalali } from '@/lib/date-utils';
 import { UserResponse } from '@/services/features/auth/types';
 
 interface UserCardProps {
-  user?: { data: UserResponse };
+  user?: { data: UserResponse | null };
   onEdit: () => void;
 }
 

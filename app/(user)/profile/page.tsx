@@ -3,11 +3,13 @@
 
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 import { EditProfileModal } from '@/components/pages/profile/editProfileModal';
 import { FeedbackModal } from '@/components/pages/profile/feedBackModal';
 import { SettingsMenu } from '@/components/pages/profile/settingMenu';
 import { UserCard } from '@/components/pages/profile/userCard';
+import { getApiErrorMessage } from '@/lib/api-error';
 import { useLogout, useMe } from '@/services/features/auth/hooks';
 
 export default function ProfilePage() {
@@ -19,8 +21,16 @@ export default function ProfilePage() {
   const router = useRouter();
 
   const logout = async () => {
-    logoutMutation.mutateAsync();
-    router.push('/');
+    if (logoutMutation.isPending) return;
+    try {
+      await logoutMutation.mutateAsync();
+      router.replace('/');
+      router.refresh();
+    } catch (error) {
+      toast.error(
+        getApiErrorMessage(error, 'خروج انجام نشد. دوباره تلاش کنید.'),
+      );
+    }
   };
 
   return (

@@ -7,6 +7,11 @@ export interface sendOtpResponse {
   newUser?: boolean;
 }
 
+export interface VerifyOtpDto {
+  phone: string;
+  code: string;
+}
+
 export interface LoginDto {
   phone: string;
   code: string;

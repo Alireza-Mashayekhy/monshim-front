@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
@@ -26,12 +26,14 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from '@/components/ui/input-otp';
+import { getApiErrorMessage } from '@/lib/api-error';
 import { jalaliToIso } from '@/lib/date-utils';
-import { normalizePhone, phoneSchema } from '@/lib/phone';
+import { normalizePhone, onlyDigits, phoneSchema } from '@/lib/phone';
 import {
   useLogin,
   useSendOtp,
   useSignUp,
+  useVerifyOtp,
 } from '@/services/features/auth/hooks';
 import { sendOtpDto } from '@/services/features/auth/types';
 
@@ -39,10 +41,17 @@ export default function Login() {
   const [step, setStep] = useState<number>(1);
   const [code, setCode] = useState('');
   const [isNewUser, setIsNewUser] = useState(false);
+  const [otpPhone, setOtpPhone] = useState('');
+  const [verifiedOtp, setVerifiedOtp] = useState<{
+    phone: string;
+    code: string;
+  } | null>(null);
+  const submitting = useRef(false);
 
   const sendOtpMutation = useSendOtp();
   const loginMutation = useLogin();
   const signUpMutation = useSignUp();
+  const verifyOtpMutation = useVerifyOtp();
 
   const router = useRouter();
 
@@ -58,7 +67,7 @@ export default function Login() {
   });
 
   const schemaInfo = z.object({
-    fullName: z.string().nonempty('نام و نام خانوادگی اجباری است.'),
+    fullName: z.string().trim().nonempty('نام و نام خانوادگی اجباری است.'),
     birthDate: z.string().optional(),
   });
 
@@ -71,36 +80,74 @@ export default function Login() {
   });
 
   const onSubmit = async (data: sendOtpDto) => {
+    if (submitting.current) return;
+    submitting.current = true;
+    setVerifiedOtp(null);
     try {
       const response = await sendOtpMutation.mutateAsync({
         phone: normalizePhone(data.phone),
       });
-      const newUser = (response as any)?.data?.newUser ?? false;
+      const newUser = response.data?.newUser === true;
+      setOtpPhone(normalizePhone(data.phone));
+      setCode('');
       setIsNewUser(newUser);
       setStep(2);
-    } catch {
-      // خطا در ارسال OTP
+    } catch (error) {
+      toast.error(
+        getApiErrorMessage(
+          error,
+          'ارسال کد تأیید انجام نشد. دوباره تلاش کنید.',
+        ),
+      );
+    } finally {
+      submitting.current = false;
     }
   };
 
   const onSubmitLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (submitting.current) return;
+    if (!/^\d{4}$/.test(code) || !otpPhone) {
+      toast.error('کد تأیید چهاررقمی را وارد کنید.');
+      return;
+    }
 
     // کاربر جدید → رفتن به مرحله ۳
     if (isNewUser) {
-      setStep(3);
+      submitting.current = true;
+      setVerifiedOtp(null);
+      try {
+        await verifyOtpMutation.mutateAsync({ phone: otpPhone, code });
+        setVerifiedOtp({ phone: otpPhone, code });
+        setStep(3);
+      } catch (error) {
+        toast.error(
+          getApiErrorMessage(
+            error,
+            'تأیید کد انجام نشد. کد واردشده را بررسی کنید.',
+          ),
+        );
+      } finally {
+        submitting.current = false;
+      }
       return;
     }
 
     // کاربر قدیمی → ورود مستقیم
+    submitting.current = true;
     try {
       await loginMutation.mutateAsync({
         code,
-        phone: normalizePhone(methods.getValues().phone),
+        phone: otpPhone,
       });
-      router.push('/home');
-    } catch (error: any) {
-      if (error.status === 400) toast.error('کد وارد شده اشتباه است');
+      router.replace('/home');
+      router.refresh();
+    } catch (error) {
+      toast.error(
+        getApiErrorMessage(error, 'ورود انجام نشد. کد تأیید را بررسی کنید.'),
+      );
+    } finally {
+      submitting.current = false;
     }
   };
 
@@ -108,18 +155,38 @@ export default function Login() {
     fullName: string;
     birthDate: string;
   }) => {
+    if (submitting.current) return;
+    if (!/^\d{4}$/.test(code) || !otpPhone) {
+      setStep(1);
+      toast.error('ابتدا کد تأیید دریافت کنید.');
+      return;
+    }
+    if (
+      !verifiedOtp ||
+      verifiedOtp.phone !== otpPhone ||
+      verifiedOtp.code !== code
+    ) {
+      setStep(2);
+      toast.error('ابتدا کد تأیید را تأیید کنید.');
+      return;
+    }
+    submitting.current = true;
     try {
       await signUpMutation.mutateAsync({
-        phone: normalizePhone(methods.getValues().phone),
+        phone: otpPhone,
         code,
         fullName: data.fullName,
         birthDate: jalaliToIso(data.birthDate) || undefined,
       });
       toast.success('ثبت‌نام شما با موفقیت انجام شد!');
-      router.push('/home');
-    } catch (error: any) {
-      if (error.status === 400)
-        toast.error('خطا در ثبت‌نام. مجدداً تلاش کنید.');
+      router.replace('/home');
+      router.refresh();
+    } catch (error) {
+      toast.error(
+        getApiErrorMessage(error, 'خطا در ثبت‌نام. مجدداً تلاش کنید.'),
+      );
+    } finally {
+      submitting.current = false;
     }
   };
 
@@ -197,7 +264,15 @@ export default function Login() {
             <form onSubmit={onSubmitLogin} className="space-y-6">
               <div className="text-center relative">
                 <button
-                  onClick={() => setStep(1)}
+                  type="button"
+                  disabled={
+                    loginMutation.isPending || verifyOtpMutation.isPending
+                  }
+                  onClick={() => {
+                    setCode('');
+                    setVerifiedOtp(null);
+                    setStep(1);
+                  }}
                   className="absolute -top-2 right-0 text-gray-400 hover:text-gray-600 transition-colors p-2"
                 >
                   <ArrowRight size={24} />
@@ -209,7 +284,7 @@ export default function Login() {
                 <p className="text-gray-500 text-xs mt-2">
                   کد ارسال شده به{' '}
                   <span className="font-bold text-gray-800 dir-ltr inline-block mx-1">
-                    {methods.getValues('phone')}
+                    {otpPhone}
                   </span>{' '}
                   را وارد کنید
                 </p>
@@ -217,7 +292,16 @@ export default function Login() {
               <InputOTP
                 maxLength={4}
                 value={code}
-                onChange={value => setCode(value)}
+                onChange={value => {
+                  setVerifiedOtp(null);
+                  setCode(onlyDigits(value));
+                }}
+                disabled={
+                  loginMutation.isPending || verifyOtpMutation.isPending
+                }
+                pasteTransformer={onlyDigits}
+                inputMode="numeric"
+                pattern="[0-9]*"
                 dir="ltr"
                 id="input-otp-ltr"
               >
@@ -242,7 +326,7 @@ export default function Login() {
               </InputOTP>
               <Button
                 type="submit"
-                loading={loginMutation.isPending}
+                loading={loginMutation.isPending || verifyOtpMutation.isPending}
                 disabled={code.length !== 4}
                 size="lg"
                 className="w-full"
@@ -268,6 +352,15 @@ export default function Login() {
                 </p>
               </div>
 
+              <Button
+                type="button"
+                variant="outline"
+                disabled={signUpMutation.isPending}
+                onClick={() => setStep(2)}
+                className="mx-auto"
+              >
+                اصلاح کد تأیید / شماره موبایل
+              </Button>
               <RHFInput
                 type="text"
                 name="fullName"

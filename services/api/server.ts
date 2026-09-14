@@ -1,85 +1,63 @@
 import { cookies } from 'next/headers';
 
-type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
-
 interface ServerRequestOptions {
-  method?: Method;
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
   headers?: HeadersInit;
   cache?: RequestCache;
   next?: NextFetchRequestConfig;
 }
 
-const BASE_URL = (process.env.NEXT_PUBLIC_API_URL ?? '').replace(/\/+$/, '');
-
-/** ساخت URL کامل — جلوگیری از مشکل اسلش تهی/اضافی بین BASE_URL و مسیر */
-const buildUrl = (url: string) => `${BASE_URL}/${url.replace(/^\/+/, '')}`;
-
-async function refreshToken() {
-  const cookieStore = await cookies();
-
-  const response = await fetch(buildUrl('auth/refresh'), {
-    method: 'POST',
-    headers: {
-      Cookie: cookieStore.toString(),
-    },
-  });
-
-  return response.ok;
+export class ServerApiError extends Error {
+  constructor(
+    public status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = 'ServerApiError';
+  }
 }
 
 export async function serverFetch<T>(
   url: string,
   options: ServerRequestOptions = {},
 ): Promise<T> {
+  const baseUrl = (process.env.NEXT_PUBLIC_API_URL ?? '').replace(/\/+$/, '');
   const cookieStore = await cookies();
-
   const isFormData = options.body instanceof FormData;
 
-  const preparedBody =
-    options.body == null
-      ? undefined
-      : isFormData
-        ? options.body
-        : JSON.stringify(options.body);
-
-  let res = await fetch(buildUrl(url), {
+  const headers = new Headers(options.headers);
+  headers.set('Cookie', cookieStore.toString());
+  if (!isFormData && options.body != null && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
+  // Server Components cannot forward rotated Set-Cookie headers to the browser.
+  // Refresh only in the browser, otherwise rotating here invalidates its session.
+  const res = await fetch(`${baseUrl}/${url.replace(/^\/+/, '')}`, {
     method: options.method ?? 'GET',
-    headers: {
-      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
-      Cookie: cookieStore.toString(),
-      ...options.headers,
-    },
-    body: preparedBody as BodyInit,
+    headers,
+    body:
+      options.body == null
+        ? undefined
+        : isFormData
+          ? (options.body as FormData)
+          : JSON.stringify(options.body),
     cache: options.cache ?? 'no-store',
     next: options.next,
+    signal: AbortSignal.timeout(20_000),
   });
 
-  if (res.status === 401) {
-    const refreshed = await refreshToken();
-
-    if (refreshed) {
-      res = await fetch(buildUrl(url), {
-        method: options.method ?? 'GET',
-        headers: {
-          ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
-          Cookie: cookieStore.toString(),
-          ...options.headers,
-        },
-        body: preparedBody as BodyInit,
-        cache: options.cache ?? 'no-store',
-        next: options.next,
-      });
-    } else {
-      throw new Error('UNAUTHORIZED');
-    }
-  }
-
   if (!res.ok) {
-    const error = await res.json().catch(() => null);
-
-    throw new Error(error?.message ?? `Request failed: ${res.status}`);
+    const body = await res.json().catch(() => null);
+    const message = Array.isArray(body?.message)
+      ? body.message.join('، ')
+      : body?.message;
+    throw new ServerApiError(
+      res.status,
+      typeof message === 'string' ? message : `Request failed: ${res.status}`,
+    );
   }
 
+  if (res.status === 204) return undefined as T;
   return res.json();
 }

@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Upload, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import * as z from 'zod';
 
 import FormProvider from '@/components/form/form-provider';
@@ -17,6 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { getImageUploadError, IMAGE_ACCEPT } from '@/lib/image-upload';
 import { DefaultImage } from '@/lib/utils';
 
 const schema = z.object({
@@ -66,9 +68,17 @@ export function ProfileEditModal({
     }
   }, [reset, open]);
 
-  const handleImageUpload = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {};
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    const validationError = getImageUploadError(file);
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+    // Saving profile changes is not implemented in this modal yet.
+  };
 
   const onSubmit = (data: FormData) => {
     // TODO: API call to save profile changes
@@ -105,7 +115,7 @@ export function ProfileEditModal({
               type="file"
               ref={fileInputRef}
               className="hidden"
-              accept="image/*"
+              accept={IMAGE_ACCEPT}
               onChange={handleImageUpload}
             />
           </div>

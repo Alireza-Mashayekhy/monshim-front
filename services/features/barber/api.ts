@@ -1,3 +1,4 @@
+import { getImageUploadError } from '@/lib/image-upload';
 import { api } from '@/services/api/client';
 import { endpoints } from '@/services/api/endpoints';
 import { ApiListResponse, ApiSingleResponse } from '@/services/api/types';
@@ -48,6 +49,8 @@ export const updateBarberProfile = async (dto: UpdateBarberProfile) => {
 };
 
 export const uploadProfileImage = async (file: File): Promise<string> => {
+  const validationError = getImageUploadError(file);
+  if (validationError) throw new Error(validationError);
   const formData = new FormData();
   formData.append('image', file);
   const { data } = await api.post(

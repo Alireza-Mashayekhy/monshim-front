@@ -4,7 +4,15 @@ import Image from 'next/image';
 import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { FieldValues, Path, PathValue, UseFormSetValue } from 'react-hook-form';
+import { toast } from 'sonner';
 
+import {
+  getImageUploadError,
+  IMAGE_DROPZONE_ACCEPT,
+  IMAGE_FORMAT_ERROR,
+  IMAGE_SIZE_ERROR,
+  MAX_IMAGE_SIZE,
+} from '@/lib/image-upload';
 import { cn } from '@/lib/utils';
 
 interface RHFImageUploaderProps<T extends FieldValues> {
@@ -13,8 +21,6 @@ interface RHFImageUploaderProps<T extends FieldValues> {
   setValue: UseFormSetValue<T>;
   error?: { message?: string };
   defaultValue?: string | null;
-  accept?: string;
-  maxSize?: number;
   aspectRatio?: number;
   className?: string;
 }
@@ -25,8 +31,6 @@ export function RHFImageUploader<T extends FieldValues>({
   setValue,
   error,
   defaultValue = null,
-  accept = 'image/jpeg,image/png,image/webp',
-  maxSize = 2 * 1024 * 1024,
   aspectRatio,
   className,
 }: RHFImageUploaderProps<T>) {
@@ -38,10 +42,9 @@ export function RHFImageUploader<T extends FieldValues>({
       const selectedFile = acceptedFiles[0];
       if (!selectedFile) return;
 
-      // اعتبارسنجی حجم
-      if (selectedFile.size > maxSize) {
-        setValue(name, undefined as any, { shouldValidate: true });
-        setPreview(null);
+      const validationError = getImageUploadError(selectedFile);
+      if (validationError) {
+        toast.error(validationError);
         return;
       }
 
@@ -51,12 +54,22 @@ export function RHFImageUploader<T extends FieldValues>({
         shouldValidate: true,
       });
     },
-    [maxSize, name, setValue],
+    [name, setValue],
   );
 
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
-    accept: accept ? { [accept]: [] } : undefined,
+    accept: IMAGE_DROPZONE_ACCEPT,
+    maxSize: MAX_IMAGE_SIZE,
+    onDropRejected: rejections => {
+      toast.error(
+        rejections.some(({ errors }) =>
+          errors.some(error => error.code === 'file-too-large'),
+        )
+          ? IMAGE_SIZE_ERROR
+          : IMAGE_FORMAT_ERROR,
+      );
+    },
     maxFiles: 1,
     multiple: false,
   });

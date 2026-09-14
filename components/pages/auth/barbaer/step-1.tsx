@@ -4,6 +4,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import * as z from 'zod';
 
 import FormProvider from '@/components/form/form-provider';
@@ -12,6 +13,7 @@ import { RHFImageUploader } from '@/components/form/rhf-image-uploader';
 import RHFInput from '@/components/form/rhf-input';
 import RHFPhoneInput from '@/components/form/rhf-phone-input';
 import { Button } from '@/components/ui/button';
+import { getImageUploadError } from '@/lib/image-upload';
 import { normalizePhone, phoneSchema } from '@/lib/phone';
 import { useBarberSignupStore } from '@/store/useBarberSignupStore';
 
@@ -28,16 +30,15 @@ export default function BarbaerStep1({ onSubmit }: Step1Props) {
   } = useBarberSignupStore();
 
   const schema = z.object({
-    fullName: z.string().nonempty('نام و نام خانوادگی اجباری است.'),
+    fullName: z.string().trim().nonempty('نام و نام خانوادگی اجباری است.'),
     phone: phoneSchema,
     birthDate: z.string().optional(),
     image: z
       .instanceof(File, { message: 'عکس پروفایل اجباری است' })
-      .refine(file => file.size <= 5 * 1024 * 1024, `حداکثر حجم 5MB`)
-      .refine(
-        file => ['image/webp'].includes(file.type),
-        'فقط فرمت‌ webp مجازند',
-      )
+      .superRefine((file, ctx) => {
+        const message = getImageUploadError(file);
+        if (message) ctx.addIssue({ code: 'custom', message });
+      })
       .optional() // اختیاری می‌کنیم تا اگر از قبل تصویر وجود دارد، مجبور به آپلود مجدد نباشد
       .or(z.string().nullable()), // اجازه می‌دهیم که base64 هم قبول شود (برای حالت preview)
   });
@@ -65,25 +66,31 @@ export default function BarbaerStep1({ onSubmit }: Step1Props) {
   }, [storedImage, setValue]);
 
   const onFormSubmit = async (data: any) => {
-    // تبدیل image به base64
-    let imageBase64 = storedImage; // مقدار قبلی را نگه دار
-
-    // اگر فایل جدید آپلود شده بود
-    if (data.image && data.image instanceof File) {
-      imageBase64 = await new Promise<string>(resolve => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.readAsDataURL(data.image);
+    try {
+      let imageBase64 = typeof data.image === 'string' ? data.image : null;
+      if (data.image instanceof File) {
+        imageBase64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            if (typeof reader.result === 'string') resolve(reader.result);
+            else reject(new Error('Failed to read image'));
+          };
+          reader.onerror = () => reject(reader.error);
+          reader.onabort = () => reject(new Error('Image read aborted'));
+          reader.readAsDataURL(data.image);
+        });
+      }
+      onSubmit({
+        fullName: data.fullName,
+        phone: normalizePhone(data.phone),
+        image: imageBase64,
+        birthDate: data.birthDate || '',
       });
+    } catch {
+      toast.error(
+        'خواندن یا ذخیره اطلاعات انجام نشد. فضای مرورگر و فایل عکس را بررسی کنید.',
+      );
     }
-
-    // ارسال داده به والد
-    onSubmit({
-      fullName: data.fullName,
-      phone: normalizePhone(data.phone),
-      image: imageBase64,
-      birthDate: data.birthDate || '',
-    });
   };
 
   return (
@@ -97,8 +104,6 @@ export default function BarbaerStep1({ onSubmit }: Step1Props) {
           name="image"
           setValue={setValue}
           error={errors.image}
-          maxSize={5 * 1024 * 1024}
-          accept="image/webp"
           aspectRatio={1}
           defaultValue={storedImage || undefined}
         />
@@ -119,9 +124,9 @@ export default function BarbaerStep1({ onSubmit }: Step1Props) {
       </div>
 
       <div className="fixed bottom-0 left-0 right-0 p-5 bg-white border-t border-gray-100 z-50">
-        <div className="max-w-lg mx-auto flex justify-end">
-          <Button type="submit">مرحله بعد</Button>
-        </div>
+        <Button type="submit" loading={methods.formState.isSubmitting}>
+          مرحله بعد
+        </Button>
       </div>
     </FormProvider>
   );

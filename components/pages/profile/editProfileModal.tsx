@@ -25,7 +25,7 @@ import { useEditUser } from '@/services/features/users/hooks';
 interface EditProfileModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  user?: { data: UserResponse };
+  user?: { data: UserResponse | null };
 }
 
 const schema = z.object({

@@ -1,71 +1,80 @@
 import axios, { InternalAxiosRequestConfig } from 'axios';
 
+import { SESSION_EXPIRED_EVENT } from '@/lib/auth';
+
 export const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
   withCredentials: true,
 });
 
-let isRefreshing = false;
-let failedQueue: Array<{
-  resolve: (value: unknown) => void;
-  reject: (reason?: any) => void;
-}> = [];
+const noRefreshPaths = new Set([
+  '/auth/login',
+  '/auth/send-otp',
+  '/auth/sign-up',
+  '/auth/register-barber',
+  '/auth/refresh',
+  '/auth/logout',
+]);
 
-const processQueue = (error: Error | null = null) => {
-  failedQueue.forEach(prom => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(null);
-    }
-  });
-  failedQueue = [];
-};
+// Shared by explicit refreshes and concurrent 401 responses. Never intercept
+// refresh/logout recursively, and never treat a real permission denial as expiry.
+let refreshPromise: Promise<void> | null = null;
+
+export function refreshSessionRequest(): Promise<void> {
+  if (!refreshPromise) {
+    refreshPromise = api
+      .post('/auth/refresh')
+      .then(() => undefined)
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+  return refreshPromise;
+}
+
+export async function waitForSessionRefresh() {
+  await refreshPromise?.catch(() => undefined);
+}
+
+function notifySessionExpired() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT));
+  }
+}
 
 api.interceptors.response.use(
   response => response,
-  async error => {
-    const originalRequest = error.config as InternalAxiosRequestConfig & {
-      _retry?: boolean;
-    };
-
-    // ۴۰۱: توکن منقضی شده — ۴۰۳: نقش‌های توکن قدیمی است
-    // (مثلاً کاربر تازه آرایشگر شده؛ با رفرش، توکن جدید با نقش‌های به‌روز صادر می‌شود)
-    const status = error.response?.status;
-    const shouldRefreshSession = status === 401 || status === 403;
-
+  async (error: unknown) => {
+    if (!axios.isAxiosError(error)) return Promise.reject(error);
+    const original = error.config as
+      | (InternalAxiosRequestConfig & { _retry?: boolean })
+      | undefined;
+    const path = original?.url?.split('?')[0].replace(/\/+$/, '');
     if (
-      !shouldRefreshSession ||
-      originalRequest._retry ||
-      originalRequest.url?.includes('/auth/refresh')
+      !original ||
+      error.response?.status !== 401 ||
+      noRefreshPaths.has(path || '')
     ) {
       return Promise.reject(error);
     }
-
-    originalRequest._retry = true;
-
-    if (isRefreshing) {
-      return new Promise((resolve, reject) => {
-        failedQueue.push({ resolve, reject });
-      })
-        .then(() => api(originalRequest))
-        .catch(err => Promise.reject(err));
+    if (original._retry) {
+      notifySessionExpired();
+      return Promise.reject(error);
     }
-
-    isRefreshing = true;
-
+    original._retry = true;
     try {
-      // درخواست رفرش - کوکی به‌طور خودکار همراه درخواست ارسال می‌شود
-      await api.post('/auth/refresh');
-      processQueue(null);
-      return api(originalRequest);
+      await refreshSessionRequest();
     } catch (refreshError) {
-      processQueue(refreshError as Error);
-      // لاگ‌اوت و هدایت به صفحه لاگین
-      await api.post('/auth/logout').catch(() => {});
+      // Offline/5xx is not proof of logout; preserve the session for retry.
+      if (
+        axios.isAxiosError(refreshError) &&
+        [401, 403].includes(refreshError.response?.status ?? 0)
+      ) {
+        notifySessionExpired();
+        return Promise.reject(error);
+      }
       return Promise.reject(refreshError);
-    } finally {
-      isRefreshing = false;
     }
+    return api(original);
   },
 );

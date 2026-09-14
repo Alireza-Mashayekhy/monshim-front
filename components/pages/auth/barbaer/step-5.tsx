@@ -9,7 +9,7 @@ import {
   User,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -26,7 +26,10 @@ import {
   InputOTPSlot,
 } from '@/components/ui/input-otp';
 import { useVisualViewport } from '@/hooks/use-visual-viewport';
+import { getApiErrorMessage, getErrorStatus } from '@/lib/api-error';
 import { jalaliToIso } from '@/lib/date-utils';
+import { getImageUploadError } from '@/lib/image-upload';
+import { isValidPhone, normalizePhone, onlyDigits } from '@/lib/phone';
 import { formatPrice } from '@/lib/utils';
 import { useRegisterBarber, useSendOtp } from '@/services/features/auth/hooks';
 import { useBarberSignupStore } from '@/store/useBarberSignupStore';
@@ -40,13 +43,17 @@ const base64ToBlob = (base64: string): Blob => {
     byteNumbers[i] = byteCharacters.charCodeAt(i);
   }
   const byteArray = new Uint8Array(byteNumbers);
-  return new Blob([byteArray], { type: contentType });
+  const blob = new Blob([byteArray], { type: contentType });
+  const validationError = getImageUploadError(blob);
+  if (validationError) throw new Error(validationError);
+  return blob;
 };
 
 export default function BarbaerStep5() {
   const router = useRouter();
   const store = useBarberSignupStore();
   const [otpCode, setOtpCode] = useState('');
+  const busy = useRef(false);
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
 
@@ -75,31 +82,84 @@ export default function BarbaerStep5() {
     updateData,
   } = store;
 
+  // Persisted drafts can bypass earlier steps; revalidate before sending OTP.
+  const validateDraft = () => {
+    if (
+      !fullName.trim() ||
+      !isValidPhone(phone) ||
+      !shopName.trim() ||
+      !provinceId ||
+      !cityId ||
+      !address.trim()
+    ) {
+      toast.error('اطلاعات فردی و سالن را در مراحل قبل تکمیل کنید.');
+      return false;
+    }
+    if (
+      !services.length ||
+      services.length > 10 ||
+      services.some(service => {
+        const price = Number(service.price.replace(/,/g, ''));
+        const duration = Number(service.duration);
+        return (
+          !service.name.trim() ||
+          !Number.isFinite(price) ||
+          price <= 0 ||
+          !Number.isInteger(duration) ||
+          duration <= 0
+        );
+      })
+    ) {
+      toast.error('نام، قیمت و مدت زمان خدمات را در مرحله قبل اصلاح کنید.');
+      return false;
+    }
+    if (portfolio.length > 5) {
+      toast.error('حداکثر ۵ نمونه‌کار مجاز است.');
+      return false;
+    }
+    return true;
+  };
+
   // مرحله ۱: ارسال OTP
   const handleSendOtp = async () => {
+    if (busy.current || !validateDraft()) return;
+    busy.current = true;
     setIsSendingOtp(true);
     try {
-      await sendOtpMutation.mutateAsync({ phone });
+      await sendOtpMutation.mutateAsync({ phone: normalizePhone(phone) });
+      setOtpCode('');
       setIsOtpModalOpen(true);
       toast.success('کد تأیید به شماره شما ارسال شد.');
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || 'خطا در ارسال کد تأیید');
+    } catch (error) {
+      if (getErrorStatus(error) === 400) {
+        setOtpCode('');
+        setIsOtpModalOpen(true);
+      } else {
+        toast.error(getApiErrorMessage(error, 'خطا در ارسال کد تأیید'));
+      }
     } finally {
       setIsSendingOtp(false);
+      busy.current = false;
     }
   };
 
   // مرحله ۲: تأیید کد و ثبت نهایی
   const handleFinalSubmit = async () => {
+    if (busy.current || !validateDraft()) return;
+    if (!/^\d{4}$/.test(otpCode)) {
+      toast.error('کد تأیید چهاررقمی را وارد کنید.');
+      return;
+    }
+    busy.current = true;
     try {
       // ساخت FormData
       const formData = new FormData();
 
       // فیلدهای متنی به صورت JSON
       const payload: any = {
-        fullName,
-        phone,
-        salonName: shopName,
+        fullName: fullName.trim(),
+        phone: normalizePhone(phone),
+        salonName: shopName.trim(),
         provinceId,
         cityId,
         address,
@@ -108,7 +168,7 @@ export default function BarbaerStep5() {
         birthDate: jalaliToIso(birthDate) || undefined,
         services: services.map(s => ({
           name: s.name,
-          price: parseFloat(s.price),
+          price: Number(s.price.replace(/,/g, '')),
           durationMinutes: parseInt(s.duration, 10),
         })),
       };
@@ -122,30 +182,42 @@ export default function BarbaerStep5() {
       // عکس پروفایل
       if (image) {
         const imageBlob = base64ToBlob(image);
-        formData.append('profileImage', imageBlob, 'profile.webp');
+        formData.append(
+          'profileImage',
+          imageBlob,
+          `profile.${imageBlob.type.split('/')[1]}`,
+        );
       }
 
       // نمونه کارها
       portfolio.forEach((img, index) => {
         const blob = base64ToBlob(img);
-        formData.append('portfolio', blob, `portfolio-${index + 1}.webp`);
+        formData.append(
+          'portfolio',
+          blob,
+          `portfolio-${index + 1}.${blob.type.split('/')[1]}`,
+        );
       });
 
       await registerMutation.mutateAsync(formData);
 
       toast.success('ثبت‌نام شما با موفقیت انجام شد!');
-      store.reset();
-      router.push('/dashboard/profile');
-    } catch (error: any) {
-      console.error('❌ Submission error:', error);
-      toast.error(
-        error.response?.data?.message ||
-          error.message ||
-          'خطا در ارسال اطلاعات. لطفاً مجدداً تلاش کنید.',
-      );
-    } finally {
       setIsOtpModalOpen(false);
       setOtpCode('');
+      store.reset();
+      router.replace('/dashboard/profile');
+      router.refresh();
+    } catch (error) {
+      toast.error(
+        getApiErrorMessage(
+          error,
+          error instanceof Error && !('isAxiosError' in error)
+            ? error.message
+            : 'خطا در ارسال اطلاعات. لطفاً مجدداً تلاش کنید.',
+        ),
+      );
+    } finally {
+      busy.current = false;
     }
   };
 
@@ -353,7 +425,13 @@ export default function BarbaerStep5() {
       </div>
 
       {/* مودال ورود کد */}
-      <Dialog open={isOtpModalOpen} onOpenChange={setIsOtpModalOpen}>
+      <Dialog
+        open={isOtpModalOpen}
+        onOpenChange={open => {
+          if (!busy.current) setIsOtpModalOpen(open);
+        }}
+      >
+        {' '}
         <DialogContent
           className="sm:max-w-md overflow-y-auto transition-[top,max-height] duration-200 ease-out"
           style={
@@ -377,7 +455,10 @@ export default function BarbaerStep5() {
             <InputOTP
               maxLength={4}
               value={otpCode}
-              onChange={value => setOtpCode(value)}
+              onChange={value => setOtpCode(onlyDigits(value))}
+              pasteTransformer={onlyDigits}
+              inputMode="numeric"
+              pattern="[0-9]*"
               dir="ltr"
               id="input-otp-ltr"
               autoFocus
@@ -404,6 +485,7 @@ export default function BarbaerStep5() {
             <div className="flex justify-end gap-2">
               <Button
                 variant="outline"
+                disabled={registerMutation.isPending}
                 onClick={() => {
                   setIsOtpModalOpen(false);
                   setOtpCode('');

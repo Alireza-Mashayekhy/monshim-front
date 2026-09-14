@@ -16,7 +16,7 @@ export type MaybeUser =
 
 /** استخراج اولین کاربر از پاسخ (آرایه، بسته‌ی پاسخ یا خود کاربر) */
 export function extractUser(payload: MaybeUser | unknown): UserResponse | null {
-  if (!payload) return null;
+  if (!payload || typeof payload !== 'object') return null;
 
   if (Array.isArray(payload)) {
     return extractUser(payload[0]);
@@ -28,8 +28,6 @@ export function extractUser(payload: MaybeUser | unknown): UserResponse | null {
   if (value.data && typeof value.data === 'object') {
     return extractUser(value.data);
   }
-
-  if (typeof value !== 'object') return null;
 
   if (!('id' in value) && !('roles' in value) && !('phone' in value)) {
     return null;
@@ -59,9 +57,10 @@ export function normalizeRoles(input: unknown): string[] {
       if (!item) return [];
       if (typeof item === 'string') return item.split(',');
       if (typeof item === 'object' && 'name' in item) {
-        return String((item as { name: unknown }).name);
+        const name = (item as { name: unknown }).name;
+        return typeof name === 'string' ? name.split(',') : [];
       }
-      return String(item);
+      return [];
     })
     .map(role => role.toLowerCase().trim())
     .filter(Boolean);

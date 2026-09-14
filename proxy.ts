@@ -1,144 +1,45 @@
-// proxy.ts
 import { jwtVerify } from 'jose';
 import { NextRequest, NextResponse } from 'next/server';
 
-// ─── فقط صفحه لاگین و ثبت‌نام عمومی هستند ───
-const PUBLIC_PATHS = ['/', '/barbaer-signup'];
-
-// ─── مسیرهای استاتیک ───
-const STATIC_PATHS = ['/_next', '/favicon.ico', '/robots.txt', '/sitemap.xml'];
-
-function isPublicPath(pathname: string): boolean {
-  return PUBLIC_PATHS.some(
-    path => pathname === path || pathname.startsWith(path + '/'),
-  );
-}
-
-function isStaticPath(pathname: string): boolean {
-  return STATIC_PATHS.some(
-    path => pathname === path || pathname.startsWith(path + '/'),
-  );
-}
-
-/**
- * استخراج نقش‌ها از payload توکن
- */
-function extractRoles(payload: any): string[] {
-  const roles = payload?.roles;
-  if (Array.isArray(roles)) {
-    return roles.map((r: string) => r?.toLowerCase().trim()).filter(Boolean);
-  }
-  if (typeof roles === 'string') {
-    return roles
-      .split(',')
-      .map((r: string) => r?.toLowerCase().trim())
-      .filter(Boolean);
-  }
-  return [];
-}
+import { canAccessPath, isPublicAuthPath } from './lib/auth';
+import { normalizeRoles } from './lib/roles';
 
 export async function proxy(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  // Never trust a client-supplied identity header, including expired-token paths.
+  const headers = new Headers(request.headers);
+  headers.delete('X-User-Payload');
+  const next = () => NextResponse.next({ request: { headers } });
   const token = request.cookies.get('access_token')?.value;
   const refreshToken = request.cookies.get('refresh_token')?.value;
-  const pathname = request.nextUrl.pathname;
+  const secret = process.env.JWT_ACCESS_SECRET;
 
-  // ─── مسیرهای استاتیک: بدون بررسی ───
-  if (isStaticPath(pathname)) {
-    return NextResponse.next();
-  }
-
-  // ─── تلاش برای verify کردن access token ───
-  let roleArray: string[] = [];
-  let accessTokenValid = false;
-  let userPayload: Record<string, any> | null = null;
-
-  if (token) {
+  let user: { roles: string[] } | null = null;
+  if (token && secret) {
     try {
-      const secret = new TextEncoder().encode(process.env.JWT_ACCESS_SECRET);
-      const { payload } = await jwtVerify(token, secret);
-      roleArray = extractRoles(payload);
-      userPayload = payload as Record<string, any>;
-      accessTokenValid = true;
+      const { payload } = await jwtVerify(
+        token,
+        new TextEncoder().encode(secret),
+      );
+      user = { roles: normalizeRoles(payload.roles) };
     } catch {
-      // توکن نامعتبر/منقضی — با رفرش سمت کلاینت دوباره تلاش می‌شود
+      // The client guard waits for /auth/me (and refresh) before rendering.
     }
   }
 
-  // ─── هیچ توکنی معتبر نیست ───
-  if (!accessTokenValid && !refreshToken) {
-    if (isPublicPath(pathname)) {
-      return NextResponse.next();
-    }
+  // Public pages stay reachable with stale/invalid cookies. Only /auth/me on the
+  // client decides whether to redirect; a refresh cookie is NOT authentication.
+  if (isPublicAuthPath(pathname)) return next();
+  if (!token && !refreshToken)
     return NextResponse.redirect(new URL('/', request.url));
-  }
-
-  // ─── کاربر لاگین‌کرده (توکن یا رفرش داره) نباید به صفحات auth بره ───
-  if (isPublicPath(pathname)) {
+  if (user && !canAccessPath(pathname, user)) {
     return NextResponse.redirect(new URL('/home', request.url));
   }
-
-  // ─── access token نامعتبر ولی refresh token وجود دارد ───
-  // برای مسیرهای محافظت‌شده باید access token معتبر باشه تا نقش‌ها بررسی بشه
-  if (!accessTokenValid && refreshToken) {
-    // اکسس‌تاکن منقضی شده؛ فرانت‌اند آن را رفرش می‌کند.
-    // فقط مسیرهای ادمین را مسدود می‌کنیم (نقش‌ها را نمی‌توان از توکن منقضی خواند)؛
-    // برای بقیه مسیرها (مثل /dashboard) اجازه می‌دهیم و تشخیص نهایی با API است
-    // که بر اساس نقش‌های واقعیِ کاربر تصمیم می‌گیرد.
-    if (pathname.startsWith('/admin')) {
-      return NextResponse.redirect(new URL('/', request.url));
-    }
-
-    return NextResponse.next();
-  }
-
-  // ─── محافظت مسیرهای ادمین ───
-  if (pathname.startsWith('/admin')) {
-    const adminRoles = ['admin', 'editor'];
-    const hasAccess = roleArray.some(role => adminRoles.includes(role));
-    if (!hasAccess) {
-      return NextResponse.redirect(new URL('/home', request.url));
-    }
-  }
-
-  // ─── محافظت مسیرهای داشبورد (فقط آرایشگر) ───
-  if (pathname.startsWith('/dashboard')) {
-    const barberRoles = ['barber', 'barber '];
-
-    const hasAccess = roleArray.some(role => barberRoles.includes(role));
-    if (!hasAccess) {
-      return NextResponse.redirect(new URL('/home', request.url));
-    }
-  }
-
-  // ─── ارسال اطلاعات کاربر از JWT به صورت header برای پر کردن استور ───
-  // نکته مهم: باید روی «درخواست» ست شود تا Server Componentها
-  // (مثل app/layout.tsx) بتوانند آن را با headers() بخوانند.
-  // ست کردن روی پاسخ فقط برای مرورگر ارسال می‌شود و در SSR قابل خواندن نیست.
-  const requestHeaders = new Headers(request.headers);
-
-  if (userPayload) {
-    const safePayload = {
-      id: userPayload.id,
-      fullName: userPayload.fullName,
-      // همیشه آرایه (در توکن ممکن است رشته‌ی جداشده با کاما باشد)
-      roles: roleArray,
-      birthDate: userPayload.birthDate,
-      phone: userPayload.phone,
-      isActive: userPayload.isActive,
-    };
-    const encodedPayload = btoa(
-      unescape(encodeURIComponent(JSON.stringify(safePayload))),
-    );
-
-    requestHeaders.set('X-User-Payload', encodedPayload);
-  }
-
-  return NextResponse.next({ request: { headers: requestHeaders } });
+  return next();
 }
 
-// ─── پیکربندی مسیرهایی که proxy روی آنها اجرا شود ───
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml).*)',
+    '/((?!api(?:/|$)|_next/|favicon.ico|robots.txt|sitemap.xml|manifest.webmanifest|.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico|woff2?|ttf|mov|mp4|txt)$).*)',
   ],
 };

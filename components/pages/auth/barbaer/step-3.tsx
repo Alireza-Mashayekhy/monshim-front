@@ -5,6 +5,7 @@ import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import { getImageUploadError, IMAGE_ACCEPT } from '@/lib/image-upload';
 import { useBarberSignupStore } from '@/store/useBarberSignupStore';
 
 interface Step3Props {
@@ -15,7 +16,6 @@ export default function BarbaerStep3({ onSubmit }: Step3Props) {
   const { portfolio, prevStep, updateData } = useBarberSignupStore();
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const portfolioInputRef = useRef<HTMLInputElement>(null);
-
 
   const removePortfolioImage = (e: React.MouseEvent, index: number) => {
     e.stopPropagation();
@@ -60,6 +60,13 @@ export default function BarbaerStep3({ onSubmit }: Step3Props) {
 
     try {
       const fileArray = Array.from(files);
+      for (const file of fileArray) {
+        const validationError = getImageUploadError(file);
+        if (validationError) {
+          toast.error(validationError);
+          return;
+        }
+      }
       const newImages = await Promise.all(fileArray.map(readFileAsDataURL));
       const updated = [...portfolio, ...newImages];
       updateData({ portfolio: updated });
@@ -130,7 +137,7 @@ export default function BarbaerStep3({ onSubmit }: Step3Props) {
           ref={portfolioInputRef}
           onChange={handlePortfolioChange}
           className="hidden"
-          accept="image/*"
+          accept={IMAGE_ACCEPT}
           multiple
         />
       </div>

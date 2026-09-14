@@ -1,9 +1,10 @@
 import { create } from 'zustand';
 
+import { extractUser } from '@/lib/roles';
 import { UserResponse } from '@/services/features/auth/types';
 
 type AuthStore = {
-  user: UserResponse | UserResponse[] | null;
+  user: UserResponse | null;
   setUser: (user: UserResponse | UserResponse[] | null) => void;
   clearUser: () => void;
 };
@@ -13,7 +14,7 @@ export const useAuthStore = create<AuthStore>(set => ({
 
   setUser: user =>
     set({
-      user,
+      user: extractUser(user),
     }),
 
   clearUser: () =>

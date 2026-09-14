@@ -3,7 +3,9 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { MapPin } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
+import { toast } from 'sonner';
 import * as z from 'zod';
 
 import FormProvider from '@/components/form/form-provider';
@@ -26,10 +28,10 @@ export default function BarbaerStep2({ onSubmit }: Step2Props) {
     useBarberSignupStore();
 
   const schema = z.object({
-    shopName: z.string().nonempty('نام آرایشگاه اجباری است'),
-    provinceId: z.string().nonempty('انتخاب استان اجباری است'), // قبول کردن null
-    cityId: z.string().nonempty('انتخاب شهر اجباری است'),
-    address: z.string().nonempty('آدرس اجباری است'),
+    shopName: z.string().trim().nonempty('نام آرایشگاه اجباری است'),
+    provinceId: z.string().trim().nonempty('انتخاب استان اجباری است'), // قبول کردن null
+    cityId: z.string().trim().nonempty('انتخاب شهر اجباری است'),
+    address: z.string().trim().nonempty('آدرس اجباری است'),
   });
 
   const methods = useForm({
@@ -52,7 +54,13 @@ export default function BarbaerStep2({ onSubmit }: Step2Props) {
   // دریافت لیست شهرها بر اساس استان انتخاب‌شده
   const { data: cities } = useCityList(parseInt(selectedProvinceId));
 
-  // اگر استان تغییر کرد، مقدار شهر را ریست کن
+  const previousProvince = useRef(selectedProvinceId);
+  useEffect(() => {
+    if (previousProvince.current !== selectedProvinceId) {
+      methods.setValue('cityId', '', { shouldValidate: true });
+      previousProvince.current = selectedProvinceId;
+    }
+  }, [selectedProvinceId, methods]);
 
   const onFormSubmit = (data: any) => {
     const province = provinces?.data?.find(
@@ -61,6 +69,13 @@ export default function BarbaerStep2({ onSubmit }: Step2Props) {
     const city = cities?.data?.find(
       (c: any) => String(c.id) === String(data.cityId),
     );
+
+    if (!province || !city) {
+      toast.error(
+        'استان و شهر معتبر انتخاب کنید؛ اگر فهرست بارگذاری نشده، دوباره تلاش کنید.',
+      );
+      return;
+    }
 
     onSubmit({
       shopName: data.shopName,

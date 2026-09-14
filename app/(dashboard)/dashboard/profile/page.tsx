@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Camera, Clock, Copy, Share2, Store, User } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import * as z from 'zod';
 
 import DashboardShell from '@/components/dashboard/layout/dashboard-shell';
@@ -19,6 +20,7 @@ import { TimeInput } from '@/components/shared/time-input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { isoToJalali, jalaliToIso } from '@/lib/date-utils';
+import { getImageUploadError, IMAGE_ACCEPT } from '@/lib/image-upload';
 import { DefaultImage } from '@/lib/utils';
 import {
   useMyBarberProfile,
@@ -97,7 +99,13 @@ export default function ProfilePage() {
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
     if (file) {
+      const validationError = getImageUploadError(file);
+      if (validationError) {
+        toast.error(validationError);
+        return;
+      }
       uploadImageMutation.mutate(file, {
         onSuccess: imageUrl => {
           setImagePreview(imageUrl);
@@ -230,7 +238,7 @@ export default function ProfilePage() {
                   type="file"
                   ref={fileInputRef}
                   className="hidden"
-                  accept="image/*"
+                  accept={IMAGE_ACCEPT}
                   onChange={handleImageUpload}
                 />
               </div>

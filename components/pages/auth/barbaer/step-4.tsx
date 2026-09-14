@@ -15,7 +15,6 @@ interface Step4Props {
 export default function BarbaerStep4({ onSubmit }: Step4Props) {
   const { services, prevStep, updateData } = useBarberSignupStore();
 
-
   // حذف سرویس
   const removeService = (id: string) => {
     const newServices = services.filter(s => s.id !== id);
@@ -59,26 +58,35 @@ export default function BarbaerStep4({ onSubmit }: Step4Props) {
 
       const price = parseFloat(String(service.price).replace(/,/g, ''));
 
-      if (isNaN(price) || price <= 0) return true;
+      if (!Number.isFinite(price) || price <= 0) return true;
 
       // اگر بیعانه وارد شده اعتبارسنجی کن
       if (service.depositPrice?.trim()) {
-        const deposit = parseFloat(String(service.depositPrice).replace(/,/g, ''));
+        const deposit = parseFloat(
+          String(service.depositPrice).replace(/,/g, ''),
+        );
 
-        if (isNaN(deposit) || deposit < 0) return true;
+        if (!Number.isFinite(deposit) || deposit < 0) return true;
 
         if (deposit > price) return true;
       }
 
       // مدت زمان
-      if (!service.duration) return true;
+      if (
+        !Number.isInteger(Number(service.duration)) ||
+        Number(service.duration) <= 0
+      )
+        return true;
 
       return false;
     });
 
     if (invalidServices.length > 0) {
       const hasInvalidDeposit = invalidServices.some(
-        s => s.depositPrice?.trim() && parseFloat(String(s.depositPrice).replace(/,/g, '')) > parseFloat(String(s.price).replace(/,/g, '')),
+        s =>
+          s.depositPrice?.trim() &&
+          parseFloat(String(s.depositPrice).replace(/,/g, '')) >
+            parseFloat(String(s.price).replace(/,/g, '')),
       );
 
       if (hasInvalidDeposit) {
@@ -148,17 +156,13 @@ export default function BarbaerStep4({ onSubmit }: Step4Props) {
               <FormattedNumberInput
                 placeholder="مبلغ کل (تومان)"
                 value={service.price}
-                onChange={val =>
-                  updateService(service.id, 'price', val)
-                }
+                onChange={val => updateService(service.id, 'price', val)}
               />
 
               <FormattedNumberInput
                 placeholder="بیعانه (اختیاری)"
                 value={service.depositPrice || ''}
-                onChange={val =>
-                  updateService(service.id, 'depositPrice', val)
-                }
+                onChange={val => updateService(service.id, 'depositPrice', val)}
               />
               <select
                 className="w-full bg-gray-50 border border-gray-200 rounded-lg px-2 text-sm text-gray-900 focus:bg-white focus:border-primary-500 outline-none transition-colors"
