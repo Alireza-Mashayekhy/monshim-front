@@ -110,7 +110,6 @@ export function useLogout() {
     onSuccess: async () => {
       clearSessionCache(queryClient);
       useAuthStore.getState().clearUser();
-      useBarberSignupStores.getState().reset();
     },
   });
 }
