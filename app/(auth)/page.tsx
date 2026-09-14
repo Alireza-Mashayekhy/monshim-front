@@ -46,8 +46,6 @@ export default function Login() {
 
   const router = useRouter();
 
-  router.push('/home');
-
   const schema = z.object({
     phone: phoneSchema,
   });
