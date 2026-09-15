@@ -99,10 +99,10 @@ export const Step1Profile: React.FC<Step1ProfileProps> = ({
         )}
 
         <div>
-          <h3 className="font-bold text-gray-800 text-sm">درباره آرایشگاه</h3>
+          {/* <h3 className="font-bold text-gray-800 text-sm">درباره آرایشگاه</h3>
           <p className="text-sm text-gray-600 leading-6 text-justify bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
             {barber.bio}
-          </p>
+          </p> */}
           <div className="flex items-start gap-3 bg-white p-4 rounded-2xl shadow-sm border border-gray-100 text-gray-600 text-sm mt-3">
             <MapPin size={18} className="shrink-0 text-primary-600 mt-0.5" />
             <span>{barber.address}</span>
