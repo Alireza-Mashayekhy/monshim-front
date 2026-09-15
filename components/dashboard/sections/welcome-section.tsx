@@ -1,4 +1,5 @@
 import { ArrowUpRight } from 'lucide-react';
+import Link from 'next/link';
 
 interface Props {
   todayAppointments: number;
@@ -18,10 +19,13 @@ export default function WelcomeCard({ todayAppointments }: Props) {
           امروز {toPersianNumber(todayAppointments)} نوبت داری.
         </p>
 
-        <button className="mt-6 flex items-center gap-2 rounded-full bg-white/15 px-5 py-3 transition hover:bg-white/20">
+        <Link
+          href="/dashboard/appointments"
+          className="mt-6 flex w-fit items-center gap-2 rounded-full bg-white/15 px-5 py-3 transition hover:bg-white/20"
+        >
           مشاهده برنامه امروز
           <ArrowUpRight size={18} />
-        </button>
+        </Link>
       </div>
     </div>
   );
