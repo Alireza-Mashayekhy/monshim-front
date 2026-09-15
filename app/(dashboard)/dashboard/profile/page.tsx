@@ -322,13 +322,14 @@ export default function ProfilePage() {
               <div className="flex items-center gap-2">
                 <div className="flex-1 bg-gray-100 rounded-lg px-4 py-3 text-center">
                   <span className="font-mono text-lg font-bold tracking-widest text-primary-700">
-                    {referralData.data.referralCode}
+                    {referralData?.data?.referralCode || ''}
                   </span>
                 </div>
                 <button
+                  type="button"
                   onClick={() => {
                     navigator.clipboard.writeText(
-                      referralData.data.referralCode,
+                      referralData?.data?.referralCode || '',
                     );
                   }}
                   className="p-3 bg-primary-100 text-primary-700 rounded-lg hover:bg-primary-200 transition-colors"
