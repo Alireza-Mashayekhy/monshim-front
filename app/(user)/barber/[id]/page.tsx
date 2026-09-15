@@ -42,7 +42,7 @@ export default function BookingWizard() {
   } = useBarber(Number(id));
 
   const { data: availableTimes, isLoading: timesLoading } = useAvailableSlots(
-    barber?.data?.id?.toString() || '',
+    barber?.data?.userId?.toString() || '',
     selectedDate,
     selectedServiceId, // ← اضافه شد
   );
