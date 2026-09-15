@@ -11,16 +11,14 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import { useAuthStore } from '@/store/auth.store';
 
 import BottomNavigation from './bottom-navigation';
 import { dashboardRoutes } from './routes';
 
-interface Props {
-  userName?: string;
-}
-
-export default function MobileNavigation({ userName = 'علیرضا' }: Props) {
+export default function MobileNavigation() {
   const [open, setOpen] = useState(false);
+  const { user } = useAuthStore();
 
   return (
     <>
@@ -39,7 +37,9 @@ export default function MobileNavigation({ userName = 'علیرضا' }: Props) {
             <div className="text-right">
               <p className="text-[11px] text-slate-400">سلام 👋</p>
 
-              <p className="text-sm font-bold text-slate-800">{userName}</p>
+              <p className="text-sm font-bold text-slate-800">
+                {user?.fullName}
+              </p>
             </div>
 
             <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
@@ -72,7 +72,7 @@ export default function MobileNavigation({ userName = 'علیرضا' }: Props) {
                 </div>
 
                 <div>
-                  <p className="font-bold text-slate-800">{userName}</p>
+                  <p className="font-bold text-slate-800">{user?.fullName}</p>
 
                   <p className="text-xs text-slate-500 mt-1">مدیریت سالن</p>
                 </div>

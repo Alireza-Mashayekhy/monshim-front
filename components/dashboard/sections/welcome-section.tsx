@@ -12,8 +12,6 @@ export default function WelcomeCard({ todayAppointments }: Props) {
       <div className="absolute bottom-0 right-0 h-28 w-28 rounded-full bg-white/5" />
 
       <div className="relative">
-        <p className="text-white/80">سلام علیرضا 👋</p>
-
         <h1 className="mt-2 text-3xl font-bold">امروز آماده‌ای؟</h1>
 
         <p className="mt-3 text-white/80">
