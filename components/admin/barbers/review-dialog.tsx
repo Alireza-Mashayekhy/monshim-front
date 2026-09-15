@@ -115,9 +115,7 @@ export function BarberReviewDialog({
               <div className="h-20 w-20 overflow-hidden rounded-full bg-gray-100">
                 {barber.profileImage ? (
                   <img
-                    src={
-                      process.env.NEXT_PUBLIC_IMAGE_URL + barber?.profileImage
-                    }
+                    src={barber?.profileImage}
                     alt={barber.fullName}
                     className="h-full w-full object-cover"
                   />
@@ -162,7 +160,7 @@ export function BarberReviewDialog({
                     {barber.portfolioImages?.map(p => (
                       <img
                         key={p}
-                        src={process.env.NEXT_PUBLIC_IMAGE_URL + p}
+                        src={p}
                         alt={barber.fullName}
                         className="h-full w-full object-cover aspect-square"
                       />
