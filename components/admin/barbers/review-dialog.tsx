@@ -160,7 +160,7 @@ export function BarberReviewDialog({
                     {barber.portfolioImages?.map(p => (
                       <img
                         key={p}
-                        src={p}
+                        src={process.env.NEXT_PUBLIC_IMAGE_URL + p}
                         alt={barber.fullName}
                         className="h-full w-full object-cover aspect-square"
                       />

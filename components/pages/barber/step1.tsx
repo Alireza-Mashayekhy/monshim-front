@@ -32,7 +32,7 @@ export const Step1Profile: React.FC<Step1ProfileProps> = ({
       {/* Header */}
       <div className="relative h-[280px] rounded-b-[40px] overflow-hidden shadow-2xl">
         <Image
-          src={barber.image || ''}
+          src={process.env.NEXT_PUBLIC_IMAGE_URL || '' + barber.image || ''}
           className="filter brightness-50"
           fill
           objectFit="cover"

@@ -15,7 +15,7 @@ export default function BarberCard({ barber }: { barber: BarberResponse }) {
         {barber?.profileImage ? (
           <Image
             fill
-            src={barber?.profileImage}
+            src={process.env.NEXT_PUBLIC_IMAGE_URL + barber?.profileImage}
             alt={barber?.salonName}
             className="w-full h-full rounded-xl object-cover bg-gray-200"
           />
