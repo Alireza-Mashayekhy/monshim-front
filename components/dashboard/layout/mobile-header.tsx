@@ -17,7 +17,7 @@ export default function MobileHeader() {
       <div className="text-center">
         <p className="text-xs text-slate-500">سلام 👋</p>
 
-        <h2 className="font-bold">{user?.fullNames}</h2>
+        <h2 className="font-bold">{user?.fullName}</h2>
       </div>
 
       <Button variant="ghost" size="icon">
