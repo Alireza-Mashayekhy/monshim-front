@@ -31,6 +31,7 @@ export interface Barber {
   portfolio: string[];
   city: string | null;
   province: string | null;
+  userId: number;
 }
 
 export interface BarberProfile {
