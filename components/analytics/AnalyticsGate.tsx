@@ -3,7 +3,7 @@
 import Script from 'next/script';
 import { useEffect, useRef, useState } from 'react';
 
-const GA_ID = 'G-KXZ735QXG9';
+const GA_ID = 'GTM-W9NNHBP7';
 const CLARITY_ID = 'ymyycjeoqr';
 
 /**
@@ -46,13 +46,17 @@ export default function AnalyticsGate() {
       firedRef.current = true;
       // حذف listenerها پس از اولین تعامل برای کاهش overhead
       INTERACTION_EVENTS.forEach(event =>
-        window.removeEventListener(event, arm, { passive: true } as AddEventListenerOptions),
+        window.removeEventListener(event, arm, {
+          passive: true,
+        } as AddEventListenerOptions),
       );
       setEnabled(true);
     };
 
     INTERACTION_EVENTS.forEach(event =>
-      window.addEventListener(event, arm, { passive: true } as AddEventListenerOptions),
+      window.addEventListener(event, arm, {
+        passive: true,
+      } as AddEventListenerOptions),
     );
 
     // فالبک: اگر تا ۲۰ ثانیه تعاملی نشد، فعال شو.
@@ -60,7 +64,9 @@ export default function AnalyticsGate() {
 
     return () => {
       INTERACTION_EVENTS.forEach(event =>
-        window.removeEventListener(event, arm, { passive: true } as AddEventListenerOptions),
+        window.removeEventListener(event, arm, {
+          passive: true,
+        } as AddEventListenerOptions),
       );
       window.clearTimeout(fallbackTimer);
     };
