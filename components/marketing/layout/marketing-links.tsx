@@ -19,7 +19,7 @@ export const NAV_LINKS: NavLink[] = [
     hint: 'پیدا کردن آرایشگاه و رزرو آنلاین',
   },
   {
-    href: siteConfig.routes.barberManagement,
+    href: siteConfig.routes.providerManagement,
     label: 'برای آرایشگران',
     title: 'نرم افزار مدیریت آرایشگاه منشیم',
     hint: 'مدیریت سالن، نوبت‌ها و درآمد',
@@ -36,6 +36,12 @@ export const NAV_LINKS: NavLink[] = [
     title: 'تعرفه و قیمت پلن‌های منشیم',
     hint: 'قیمت پلن‌های اشتراک',
   },
+  {
+    href: siteConfig.routes.tutorials,
+    label: 'آموزش',
+    title: 'آموزش کار با سایت و نرم افزار منشیم',
+    hint: 'ویدیوهای آموزشی گام‌به‌گام',
+  },
 ];
 
 export const SEO_LINKS: NavLink[] = [
@@ -45,7 +51,7 @@ export const SEO_LINKS: NavLink[] = [
     title: 'منشیم | سامانه رزرو آنلاین آرایشگاه',
   },
   {
-    href: siteConfig.routes.barberManagement,
+    href: siteConfig.routes.providerManagement,
     label: 'نرم افزار مدیریت آرایشگاه',
     title: 'نرم افزار مدیریت آرایشگاه منشیم',
   },

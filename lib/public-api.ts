@@ -1,6 +1,7 @@
 import { resolveServerApiBaseUrl } from './api-base-url';
 import { publicImageUrl } from './images';
 import { PUBLIC_API_CACHE_TAG } from './public-cache-tags';
+import { siteConfig } from './site-config';
 
 type ApiEnvelope<T> = {
   data?: T;
@@ -17,7 +18,7 @@ let loggedMissingBaseUrl = false;
  * `API_URL` first, then the public API URL — relative values like `/api`
  * are resolved against the site origin in production).
  *
- * ⚠️ برگرداندن `null` از اینجا برای صفحه‌هایی مثل `/panel/barber/[id]`
+ * ⚠️ برگرداندن `null` از اینجا برای صفحه‌هایی مثل `/panel/provider/[id]`
  * یعنی اجرای `notFound()` و نمایش ۴۰۴ به کاربر. پس هر سه حالت خطا
  * (کانفیگ نامعتبر، پاسخ غیرموفق بک‌اند، خطای شبکه) لاگ می‌شوند؛ قبلاً
  * این خطاها بی‌صدا بلعیده می‌شدند و ۴۰۴ کاذبِ ناشی از کانفیگ سرور از
@@ -84,5 +85,11 @@ export async function fetchPublicApi<T>(path: string): Promise<T | null> {
 }
 
 export function absolutePublicImageUrl(imagePath?: string | null) {
-  return publicImageUrl(imagePath);
+  const image = publicImageUrl(imagePath);
+  if (!image) return undefined;
+  try {
+    return new URL(image, siteConfig.url).toString();
+  } catch {
+    return undefined;
+  }
 }

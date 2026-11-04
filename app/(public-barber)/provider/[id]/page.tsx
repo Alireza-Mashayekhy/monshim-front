@@ -11,15 +11,16 @@ import {
 } from 'lucide-react';
 import type { Metadata } from 'next';
 import Image from 'next/image';
-import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 
 import JsonLd from '@/components/marketing/json-ld';
 import Breadcrumbs from '@/components/marketing/shared/breadcrumbs';
+import BookingGate, {
+  BookingTrigger,
+} from '@/components/public-barber/booking-gate';
 import PortfolioGallery from '@/components/public-barber/portfolio-gallery';
 import PublicReviews from '@/components/public-barber/public-reviews';
 import ShareButton from '@/components/public-barber/share-button';
-import { Button } from '@/components/ui/button';
 import { getActivityTypeLabel } from '@/constants/activity-types';
 import { publicImageUrl } from '@/lib/images';
 import { absolutePublicImageUrl, fetchPublicApi } from '@/lib/public-api';
@@ -35,7 +36,7 @@ import type { BarberReview } from '@/services/features/barber/types';
 import type { PublicBarberProfile } from '@/services/features/public-page/types';
 
 /**
- * صفحهٔ عمومی و سئوشدهٔ آرایشگاه (`/barber/[slug]`).
+ * صفحهٔ عمومی و سئوشدهٔ آرایشگاه (`/provider/[slug]`).
  *
  * این صفحه بدون هدر و فوتر عمومی سایت و با بردکرامب نمایش داده می‌شود:
  * ۱. تصویر مربعی ۱:۱ با نام آرایشگاه روی بخش پایینی عکس (بلور + گرادیانت خوانا)
@@ -55,8 +56,8 @@ const REVIEWS_LIMIT = 50;
 const HERO_BOTTOM_BLUR_MASK =
   'linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.95) 50%, rgba(0,0,0,0.38) 78%, rgba(0,0,0,0) 100%)';
 
-function barberPath(slug: string) {
-  return `/barber/${encodeURIComponent(slug)}`;
+function providerPath(slug: string) {
+  return `/provider/${encodeURIComponent(slug)}`;
 }
 
 async function getPublicBarber(rawIdentifier: string) {
@@ -127,7 +128,7 @@ export async function generateMetadata({
     return buildPageMetadata({
       title: 'پروفایل آرایشگاه',
       description: 'پروفایل عمومی آرایشگاه در منشیم.',
-      path: `/barber/${encodeURIComponent(id)}`,
+      path: `/provider/${encodeURIComponent(id)}`,
       noIndex: true,
     });
   }
@@ -136,7 +137,7 @@ export async function generateMetadata({
   return buildPageMetadata({
     title: location ? `${barber.salonName} در ${location}` : barber.salonName,
     description: profileDescription(barber),
-    path: barberPath(barber.slug),
+    path: providerPath(barber.slug),
     imageUrl: absolutePublicImageUrl(barber.profileImage),
   });
 }
@@ -148,13 +149,13 @@ export default async function PublicBarberPage({ params }: BarberPageProps) {
 
   // اگر آدرس با آیدی عددی یا حروف بزرگ باز شده باشد، همیشه به اسلاگ ریدایرکت شود
   if (id !== barber.slug) {
-    permanentRedirect(barberPath(barber.slug));
+    permanentRedirect(providerPath(barber.slug));
   }
 
   const reviews = await getPublicReviews(barber.id);
 
-  const profileUrl = `${siteConfig.url}${barberPath(barber.slug)}`;
-  const bookingUrl = `/panel/barber/${barber.id}`;
+  const profileUrl = `${siteConfig.url}${providerPath(barber.slug)}`;
+  const bookingUrl = `/panel/provider/${barber.id}`;
   const heroImage = publicImageUrl(barber.profileImage);
   const location = locationLabel(barber);
   const activityText = resolveActivityText(barber.activityType);
@@ -246,7 +247,7 @@ export default async function PublicBarberPage({ params }: BarberPageProps) {
   };
 
   return (
-    <>
+    <BookingGate bookingUrl={bookingUrl} salonName={barber.salonName}>
       <JsonLd data={[salonSchema, breadcrumbSchema]} />
 
       <div className="mx-auto w-full max-w-2xl px-4 pb-28 pt-2 sm:px-6">
@@ -255,7 +256,7 @@ export default async function PublicBarberPage({ params }: BarberPageProps) {
           <Breadcrumbs
             items={[
               { href: '/', label: siteConfig.name },
-              { href: barberPath(barber.slug), label: barber.salonName },
+              { href: providerPath(barber.slug), label: barber.salonName },
             ]}
           />
         </div>
@@ -283,10 +284,7 @@ export default async function PublicBarberPage({ params }: BarberPageProps) {
               <div className="absolute inset-x-4 top-4 z-20 flex items-center justify-between gap-2">
                 <div className="flex flex-wrap items-center gap-1.5">
                   <div className="inline-flex items-center gap-1.5 rounded-full border border-white/65 bg-white/88 px-3 py-1.5 text-xs font-bold text-gray-900 shadow-sm backdrop-blur-md">
-                    <Star
-                      size={14}
-                      className="fill-amber-400 text-amber-400"
-                    />
+                    <Star size={14} className="fill-amber-400 text-amber-400" />
                     <span>
                       {reviewCount > 0
                         ? toPersianDigits(rating.toFixed(1))
@@ -458,9 +456,9 @@ export default async function PublicBarberPage({ params }: BarberPageProps) {
 
                   return (
                     <li key={service.id}>
-                      <Link
-                        href={bookingUrl}
-                        className="group flex items-center justify-between gap-3 rounded-2xl border border-gray-100 bg-gray-50/60 p-4 transition-all hover:border-primary/35 hover:bg-primary-3/70 hover:shadow-xs"
+                      <BookingTrigger
+                        aria-label={`رزرو ${service.name} در ${barber.salonName}`}
+                        className="group flex w-full items-center justify-between gap-3 rounded-2xl border border-gray-100 bg-gray-50/60 p-4 text-right transition-all hover:border-primary/35 hover:bg-primary-3/70 hover:shadow-xs focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary/40"
                       >
                         <div className="min-w-0 space-y-1">
                           <p className="truncate text-sm font-black text-gray-900 group-hover:text-primary sm:text-base">
@@ -499,7 +497,7 @@ export default async function PublicBarberPage({ params }: BarberPageProps) {
                             <ArrowLeft size={15} />
                           </span>
                         </div>
-                      </Link>
+                      </BookingTrigger>
                     </li>
                   );
                 })}
@@ -512,18 +510,12 @@ export default async function PublicBarberPage({ params }: BarberPageProps) {
       {/* نوار شناور پایین صفحه برای رزرو سریع نوبت */}
       <div className="fixed inset-x-0 bottom-0 z-40 border-t border-primary/10 bg-white/85 px-4 py-3 backdrop-blur-md">
         <div className="mx-auto max-w-2xl">
-          <Button
-            asChild
-            size="lg"
-            className="h-12 w-full gap-2 rounded-2xl text-sm font-black shadow-lg shadow-primary/20 sm:text-base"
-          >
-            <Link href={bookingUrl}>
-              <CalendarCheck size={19} />
-              رزرو نوبت آنلاین در {barber.salonName}
-            </Link>
-          </Button>
+          <BookingTrigger className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-primary text-sm font-black text-white shadow-lg shadow-primary/20 transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-primary/40 sm:text-base">
+            <CalendarCheck size={19} />
+            رزرو نوبت آنلاین در {barber.salonName}
+          </BookingTrigger>
         </div>
       </div>
-    </>
+    </BookingGate>
   );
 }

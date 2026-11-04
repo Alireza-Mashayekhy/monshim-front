@@ -20,20 +20,18 @@ export const metadata: Metadata = {
 
 interface UserLayoutProps {
   children: React.ReactNode;
-  showNav?: boolean;
 }
 
-export default function UserLayout({
-  children,
-  showNav = true,
-}: UserLayoutProps) {
+export default function UserLayout({ children }: UserLayoutProps) {
   return (
     <QueryProvider>
-      <AuthProvider>
-        <SessionHydration>
-          <UserLayoutClient showNav={showNav}>{children}</UserLayoutClient>
-        </SessionHydration>
-      </AuthProvider>
+      {/* ترتیب مهم است: دادهٔ نشست باید **پیش از** AuthProvider در کش باشد تا
+          صفحهٔ خصوصی SSR شود و درخواست تکراری /auth/me ارسال نشود. */}
+      <SessionHydration>
+        <AuthProvider>
+          <UserLayoutClient>{children}</UserLayoutClient>
+        </AuthProvider>
+      </SessionHydration>
     </QueryProvider>
   );
 }

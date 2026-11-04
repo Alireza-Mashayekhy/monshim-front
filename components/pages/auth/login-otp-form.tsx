@@ -150,8 +150,10 @@ export default function LoginOtpForm({
       });
 
       // If user is a new user who hasn't registered yet
-      if ((response as any)?.data?.newUser) {
-        toast.error('شما هنوز ثبت‌نام نکرده‌اید. لطفا ابتدا ثبت نام کنید.');
+      if (response.data?.newUser) {
+        toast.info(
+          'شما هنوز ثبت‌نام نکرده‌اید. در حال انتقال به صفحه ثبت‌نام...',
+        );
         router.push(buildAuthHref('/register', callbackUrl, { phone }));
         return;
       }

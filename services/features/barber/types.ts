@@ -32,7 +32,10 @@ export interface BarberResponse {
   rating?: number | null;
   reviewCount?: number | null;
   isApproved?: boolean;
+  /** Public visibility toggle, independent of account login. */
   isActive?: boolean;
+  isAccountActive?: boolean;
+  isAdminAccount?: boolean;
   slug?: string | null;
   createdAt?: string;
   hasPendingChanges?: boolean;
@@ -85,7 +88,7 @@ export interface BarberProfile {
   id: number;
   /** شناسهٔ پروفایل (uuid) که مسیرهای ادمین با آن کار می‌کنند. */
   barberProfileId?: string;
-  /** اسلاگ صفحهٔ عمومی آرایشگر (`/barber/[slug]`) در صورت فعال بودن. */
+  /** اسلاگ صفحهٔ عمومی آرایشگر (`/provider/[slug]`) در صورت فعال بودن. */
   slug?: string | null;
   fullName: string;
   phone: string;
@@ -108,6 +111,7 @@ export interface BarberProfile {
   workEndTime?: string | null;
   slotIntervalMinutes?: SlotIntervalMinutes;
   isApproved: boolean;
+  isPubliclyVisible?: boolean;
   rejectionReason?: string | null;
   pendingStatus?: BarberPendingStatus;
   hasPendingChanges?: boolean;
@@ -153,6 +157,8 @@ export interface MyReferralsInfo {
     completedPaidBookingsCount: number;
     requiredPaidBookings: number;
     hasPurchasedPublicPage: boolean;
+    /** تحقق یکی از دو شرط (۳۰ رزرو موفق یا خرید صفحهٔ اختصاصی) */
+    isEligible?: boolean;
   };
   stats: {
     total: number;

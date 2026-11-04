@@ -46,14 +46,14 @@ import {
   useUpdatePublicPageSlug,
 } from '@/services/features/public-page/hooks';
 
-const URL_HOST_PREFIX = `${siteConfig.url.replace(/^https?:\/\//, '')}/barber/`;
+const URL_HOST_PREFIX = `${siteConfig.url.replace(/^https?:\/\//, '')}/provider/`;
 
 /**
  * صفحهٔ اختصاصی (عمومی) آرایشگاه در داشبورد.
  *
- * صفحهٔ عمومی با آدرس `/barber/[slug]` وقتی فعال می‌شود که یکی از این دو شرط
+ * صفحهٔ عمومی با آدرس `/provider/[slug]` وقتی فعال می‌شود که یکی از این دو شرط
  * برقرار باشد:
- *   • خرید یک‌بارهٔ پکیج ۷۷۳ هزار تومانی (مادام‌العمر)؛
+ *   • خرید یک‌بارهٔ پکیج ۷۷۳ هزار تومانی؛
  *   • یا ثبت ۳۰۰ رزرو موفق که پرداخت آن‌ها در درگاه انجام شده و لغو نشده باشند
  *     (مشابه بخش امور مالی).
  *
@@ -74,6 +74,7 @@ export default function PublicPagePage() {
 
   const status = statusData?.data;
   const isActive = Boolean(status?.isActive);
+  const isPubliclyHidden = status?.isPubliclyVisible === false;
   const currentSlug = status?.slug ?? null;
   const required = status?.requiredPaidBookings ?? 300;
   const paidBookings = status?.paidBookingsCount ?? 0;
@@ -184,7 +185,9 @@ export default function PublicPagePage() {
                   وضعیت صفحهٔ عمومی
                 </h2>
               </div>
-              {isActive ? (
+              {isPubliclyHidden ? (
+                <Badge variant="secondary">نمایش عمومی غیرفعال</Badge>
+              ) : isActive ? (
                 <Badge className="gap-1 bg-primary text-white">
                   <BadgeCheck size={13} /> فعال
                 </Badge>
@@ -196,10 +199,19 @@ export default function PublicPagePage() {
             <p className="mt-3 text-sm leading-7 text-muted-foreground">
               {!isActive
                 ? 'صفحهٔ اختصاصی شما غیرفعال است. با خرید پکیج یا رسیدن به ۳۰۰ رزرو موفقِ پرداخت‌شده در درگاه فعال می‌شود و سپس می‌توانید اسلاگ دلخواه سالن خود را ثبت کنید.'
-                : currentSlug
-                  ? 'صفحهٔ اختصاصی شما فعال است؛ مشتریان می‌توانند بدون ورود به سامانه آن را با آدرس اختصاصی شما ببینند و در نتایج جستجو نمایش داده می‌شود. آدرس اختصاصی شما قطعی و غیرقابل تغییر است.'
-                  : 'صفحهٔ اختصاصی شما فعال شده است! برای ساخت لینک عمومی و جایگزینی شناسهٔ عددی در آدرس، لطفاً یک اسلاگ یکتا برای سالن خود انتخاب و ثبت کنید.'}
+                : isPubliclyHidden
+                  ? 'امتیاز و آدرس صفحهٔ اختصاصی شما محفوظ است، اما نمایش عمومی سالن توسط مدیریت غیرفعال شده است.'
+                  : currentSlug
+                    ? 'صفحهٔ اختصاصی شما فعال است؛ مشتریان می‌توانند بدون ورود به سامانه آن را با آدرس اختصاصی شما ببینند و در نتایج جستجو نمایش داده می‌شود. آدرس اختصاصی شما قطعی و غیرقابل تغییر است.'
+                    : 'صفحهٔ اختصاصی شما فعال شده است! برای ساخت لینک عمومی و جایگزینی شناسهٔ عددی در آدرس، لطفاً یک اسلاگ یکتا برای سالن خود انتخاب و ثبت کنید.'}
             </p>
+
+            {isPubliclyHidden && (
+              <p className="mt-2 text-sm font-medium text-amber-800">
+                حساب و دسترسی به پنل برقرار است. برای بررسی وضعیت نمایش با
+                پشتیبانی تماس بگیرید.
+              </p>
+            )}
 
             {isActive && currentSlug && publicUrl && (
               <div className="mt-4 rounded-2xl border border-primary/20 bg-primary-2/50 p-4">
@@ -212,17 +224,19 @@ export default function PublicPagePage() {
                 >
                   {publicUrl}
                 </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Button asChild size="sm" variant="outline">
-                    <Link href={publicUrl} target="_blank">
-                      <ExternalLink size={14} /> مشاهده صفحه
-                    </Link>
-                  </Button>
-                  <Button size="sm" variant="outline" onClick={handleCopy}>
-                    {copied ? <Check size={14} /> : null}
-                    {copied ? 'کپی شد' : 'کپی لینک'}
-                  </Button>
-                </div>
+                {!isPubliclyHidden && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button asChild size="sm" variant="outline">
+                      <Link href={publicUrl} target="_blank">
+                        <ExternalLink size={14} /> مشاهده صفحه
+                      </Link>
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={handleCopy}>
+                      {copied ? <Check size={14} /> : null}
+                      {copied ? 'کپی شد' : 'کپی لینک'}
+                    </Button>
+                  </div>
+                )}
                 <p className="mt-3 flex items-start gap-1.5 rounded-xl bg-white/70 p-2.5 text-xs leading-6 text-gray-600">
                   <Lock size={14} className="mt-1 shrink-0 text-gray-400" />
                   <span>
@@ -386,7 +400,7 @@ export default function PublicPagePage() {
                 {toPersianDigits(
                   new Date(status.purchasedAt).toLocaleDateString('fa-IR'),
                 )}{' '}
-                خریداری شده و مادام‌العمر فعال است.
+                خریداری شده و فعال است.
               </p>
             )}
           </AppCard>
@@ -436,7 +450,7 @@ export default function PublicPagePage() {
                   • انتخاب یک‌بارهٔ اسلاگ (آدرس اختصاصی یکتا) بدون نمایش آیدی
                 </li>
                 <li>• نمایش خدمات، قیمت‌ها، نمونه‌کارها و نظرات</li>
-                <li>• فعال‌سازی آنی و مادام‌العمر بدون نیاز به تمدید</li>
+                <li>• فعال‌سازی آنی بدون نیاز به تمدید</li>
               </ul>
 
               {hasReferralDiscount ? (

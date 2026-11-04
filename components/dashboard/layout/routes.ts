@@ -3,6 +3,7 @@ import {
   Clock,
   Gem,
   Globe,
+  Headphones,
   LayoutDashboard,
   Scissors,
   UserRound,
@@ -44,7 +45,7 @@ export const dashboardRoutes = [
     href: '/dashboard/club',
   },
   /**
-   * صفحهٔ اختصاصی/عمومی آرایشگاه (`/barber/[id]`) — خرید پکیج یا پیشرفت به
+   * صفحهٔ اختصاصی/عمومی آرایشگاه (`/provider/[id]`) — خرید پکیج یا پیشرفت به
    * سمت ۳۰۰ نوبتِ پرداخت‌شده. در انتهای فهرست نگه داشته شده چون منوی موبایل
    * با اندیس به آیتم‌ها اشاره می‌کند.
    */
@@ -52,5 +53,11 @@ export const dashboardRoutes = [
     icon: Globe,
     title: 'صفحهٔ اختصاصی',
     href: '/dashboard/public-page',
+  },
+  /** پشتیبانی آرایشگر — همان تیکت‌های پنل کاربر (اندیس ۹، انتهای فهرست) */
+  {
+    icon: Headphones,
+    title: 'پشتیبانی',
+    href: '/dashboard/support',
   },
 ];
